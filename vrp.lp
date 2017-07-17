@@ -1,21 +1,30 @@
 % introduce edge variables if necessary
 edge(X,Y) :- cost(X,Y,_).
+% introduce edge variables
+node(X) :- cost(X,_,_).
+node(Y) :- cost(_,Y,_).
 
-:- route(0,_), not route(_,0).
+% Each vehicle driving out, has to come back in
+:- route(0,_,V), not route(_,0,V).
 
-reached(Y) :- route(0,Y).
-reached(Y) :- route(X,Y), reached(X).
+% Check that every node has been reached
+reached(Y) :- route(0,Y,_).
+reached(Y) :- route(X,Y,_), reached(X).
 :- node(X), not reached(X).
 
-{ route(X,Y): edge(X,Y)} = 1 :- node(X), X != 0.
-{ route(X,Y): edge(X,Y)} = 1 :- node(Y), Y != 0.
+% Build routes, each node has at least one route incoming and at least one outgoing
+{ route(X,Y,V): edge(X,Y),vehicle(V)} >= 1 :- node(Y), Y != 0.
+{ route(Y,Z,V): edge(Y,Z)} >= 1 :- node(Y), route(X,Y,V), Y != 0.
 
-%Each node is serviced by a vehicle
-{service(X,K) : vehicle(K)} = 1 :- node(X), X != 0.
-%Adjacent vehicles on a route have the same service vehicle (i.e. one route is serviced by one verhicle)
-:- route(X,Y), service(X,K1), service(Y,K2), K1 != K2, X != 0, Y != 0.
 
-%Each vehicle leaves the depot only once
-:- route(0,X1), route(0,X2), service(X1,K1), service(X2,K2), X1 != X2, K1 = K2.
+#minimize{C,X,Y : route(X,Y,_), cost(X,Y,C)}.
 
-#minimize{C,X,Y : route(X,Y), cost(X,Y,C)}.
+%Temporary, each vehicle only departs once
+:- route(0,X1,V), route(0,X2,V), X1 != X2.
+
+% Verify that the routes are cycles, i.e. they end at 0 and they are connected
+connected(Y,V) :- route(0,Y,V).
+connected(Y,V) :- route(X,Y,V), connected(X,V).
+:- route(0,_,V), not connected(0,V).
+:- route(X,Y,V), not connected(Y,V), Y != 0.
+:- route(X,Y,V), not connected(X,V), X != 0.
