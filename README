@@ -1,0 +1,49 @@
+The files contain an encoding for the vehicle routing problem (VRP) and the extensions with time windows (VRPTW) and site dependent VRPTW (SDVRPTW).
+
+The vehicle routing problem is defined slightly different depending on the source.
+Generally the VRP is defined as a graph where the first node (usually node 0) is defined as the depot and a set of n vehicles.
+A solution is a set of routes, each starting and ending at node 0. The number of routes as less than or equal to n.
+
+The VRP contains some extra constraints that limit the possible solutions or make it an optimization problem, the following options occur in some, but not all definitions:
+- The graph is complete and every non-complete graph is completed before solving. Besides other things, this allows the constraint, that every node can only be visited once.
+- Each edge is associated with a weight and the goal is to find a solution with minimal weight.
+- There is a capacity for each vehicle, limiting the amount of nodes that can be visited by a vehicle.
+- There is a service time for each node and a duration for each edge. The sum must not exceed a defined bound.
+
+Here we use the following definition, taken from http://neo.lcc.uma.es/vrp/vehicle-routing-problem/
+The graph is assumed to be incomplete and directed. Each edge has a weight and the goal is to find a minimal solution. Additionally each edge and node has an associated time it takes for a vehicle to pass and the total time is limited by a treshold.
+Nodes can be used more than once (e.g. to reach leafs), and by different vehicles, but may only be services once by one vehicle.
+
+
+Time window extensions
+For time windows constraints, the following definitions are added:
+- Each edge has a time it takes to travel using it.
+- Each node has a service time, i.e. the time it takes a vehicle if it services this node
+- Each node has a time window associated with it, a vehicle cannot service a node outside of this time window
+Definition according to: "Site dependent vehicle routing problem with soft time window Modeling and solution approach" - Esmat Zare-Reisabadi, S. Hamid Mirmohammadi (2014)
+
+
+Site depency
+For site dependency, for each node a list of allowed vehicles is defined, other vehicles may not service this node.
+Definition according to "Pricing strategies for the site-dependent vehicle routing problem" - Silvia Schwarze (2015)
+
+
+Predicates
+Instance encoding
+vehicle(v) - Defines that v is a vehicle
+node(x) - Defines that x is a node, implicitely defined by cost(...)
+edge(x,y) - Defines there exists an edge from x to y, implicitely defined by cost (...)
+cost(x,y,c) - Defines the cost to use the edge from x -> y.
+duration(x,y,t) - Defines the time it takes to travel from x->y
+serviceTime(x,t) - Defines how long it takes to service node x-
+available(x,t) - Defines that x can be services at time t (Time window extension)
+maybeServices(x,v) - Defines that x can be serviced by vehicle v (site dependency encoding)
+
+Problem encoding output:
+route(x,y,v) - vehicle uses arc x,y for (one if its) routes
+services(x,v) - vehicle v services node x
+
+Intermediate predicates
+reached(x) - Used to check if all nodes are reached by a vehicle
+connected(x,v) - Used to check that x is on a connected tour of vehicle v
+reachedAt(x,t) - Used to check the time window constraints for the TW extension. Signifies that node x has been reached at time t
