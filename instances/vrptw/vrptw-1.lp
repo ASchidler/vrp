@@ -20,3 +20,6 @@ available(4,6).available(4,7).available(4,8).
 available(5,7).available(5,8).available(5,9).
 available(6,4).available(6,5).available(6,6).
 
+serviceTime(X,1) :- node(X).
+
+timeLimit(20).

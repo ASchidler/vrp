@@ -1,27 +1,27 @@
-% introduce edge variables if necessary
-edge(X,Y) :- cost(X,Y,_).
+%track time, vehicle starts at depot
+timePassed(0,0,V,0) :- vehicle(V).
 
-:- route(0,_), not route(_,0).
+% Non-serviced nodes
+timePassed(Y,T,V,X) :- timePassed(X,O,V,_), route(X,Y,V), duration(X,Y,D), 
+	%#max{OS : timePassed(_,OS,V,_)} = O, %Only use the previous
+	not services(Y,V), 
+	T = O + D,
+	#count{DS : timePassed(Y,DS,V,X)} = 0.
+	%not timePassed(Y,_,V,X). %Only once per edge
 
-reached(Y) :- route(0,Y).
-reached(Y) :- route(X,Y), reached(X).
-:- node(X), not reached(X).
+%serviced nodes
+%timePassed(Y,T,V,X) :- timePassed(X,O,V,_), route(X,Y,V), duration(X,Y,D), 
+%	#max{OS : timePassed(_,OS,V,_)} = O, %Only use the previous
+%	services(Y,V),
+%	serviceTime(Y,S), 
+%	T = O + D + S,
+%	not timePassed(Y,_,V,X). %Only once per edge
 
-{ route(X,Y): edge(X,Y)} = 1 :- node(X), X != 0.
-{ route(X,Y): edge(X,Y)} = 1 :- node(Y), Y != 0.
+% Use the first serviced node as a baseline as to when the vehicle may leave the depot
+%startsAt(V,DT) :- vehicle(V), #min{DS: services(XS,V), timePassed(XS,DS,V,_)} = D, timePassed(X,D,V,_), available(X,T), DT = T - D, DT >= 0.
 
-%Each node is serviced by a vehicle
-{service(X,K) : vehicle(K)} = 1 :- node(X), X != 0.
-%Adjacent vehicles on a route have the same service vehicle (i.e. one route is serviced by one verhicle)
-:- route(X,Y), service(X,K1), service(Y,K2), K1 != K2, X != 0, Y != 0.
-
-%Each vehicle leaves the depot only once
-:- route(0,X1), route(0,X2), service(X1,K1), service(X2,K2), X1 != X2, K1 = K2.
-
-#minimize{C,X,Y : route(X,Y), cost(X,Y,C)}.
+% Calculate at which points the vehicles may reach the different nodes
+%reachedAt(X,T,V) :- vehicle(V), timePassed(X,D,V,_), startsAt(V,ST), T = ST + D.
 
 %time window constraints
-reachedAt(X,T) :- route(0,X), available(X,T).
-reachedAt(Y,T+D) :- route(X,Y), reachedAt(X,T), duration(X,Y,D), available(Y,T+D), Y != 0.
-
-:- node(X), not reachedAt(X,_), X != 0.
+%:- node(X), not reachedAt(X,_,_), X != 0.
