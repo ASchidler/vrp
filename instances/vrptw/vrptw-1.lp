@@ -1,4 +1,4 @@
-vehicle(a).vehicle(b).vehicle(c).
+vehicle(a).vehicle(b).
 
 node(0).node(1).node(2).node(3).node(4).node(5).node(6).
 cost(0,1,1).cost(1,2,1).cost(2,3,1).cost(3,0,1).

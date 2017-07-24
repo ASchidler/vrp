@@ -29,3 +29,6 @@ connected(Y,V) :- route(X,Y,V), connected(X,V).
 	
 % Optimize for costs
 #minimize{C,X,Y,V : route(X,Y,V), cost(X,Y,C)}.
+
+#show route/3.
+#show services/2.
