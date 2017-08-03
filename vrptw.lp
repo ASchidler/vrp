@@ -1,3 +1,4 @@
+%This solution has one limitation. One node may be used several times, but a path cannot, i.e. the node x can be used several times in a route, but not x-y-z
 routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
 
 % order visited nodes
@@ -22,9 +23,3 @@ notServicedAt(X,V,N) :-	reachedAt(X,T,V,N), not servicedAt(X,V,N).
 
 % Check if each node is serviced
 :- services(X,V), not servicedAt(X,V,_).
-
-% Verify that the taken time is consistent. I.e. that it is not calculated in a way, such that a node is never serviced.
-% This may occur, if a node is used more than once. The time may have then been calculated in a way, s.t. the node is never serviced
-% Note that the opposite case, where a node is serviced more than once is not a problem, since we are searching for an optimal solution, the model is optimal nonetheless
-
-% Try to establish one timing, not define all possible timings -> easier to kill wrong solutions.
