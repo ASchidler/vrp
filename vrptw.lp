@@ -27,3 +27,17 @@ notServicedAt(X,V,N) :-	routeOrder(_,X,N,V), not servicedAt(X,V,N).
 
 % Check if each node is serviced
 :- services(X,V), not servicedAt(X,V,_).
+
+% Check the travel duration
+% First use the fixed points, i.e. the service nodes, by using the earliest possible arrival
+travelTime(X,T,V,N) :- servicedAt(X,V,N), available(X,T), reachedAt(X,T,V,N).
+
+:- travelTime(X,T1,V,N), travelTime(X,T2,V,N), T1 != T2.
+
+% Now calculate back and forward
+travelTime(Y,O,V,N+1) :- routeOrder(X,Y,N+1,V),	travelTime(X,T,V,N), notServicedAt(Y,V,N+1), duration(X,Y,D), O = T+D.
+travelTime(X,O,V,N-1) :- routeOrder(X,Y,N,V),	travelTime(Y,T,V,N), notServicedAt(X,V,N-1), duration(X,Y,D), O = T-D.
+
+:- travelTime(0,T1,V,0), travelTime(X,T2,V,_), timeLimit(L), T2 - T1 > L.
+
+#show travelTime/4.

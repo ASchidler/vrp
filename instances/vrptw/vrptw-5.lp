@@ -9,7 +9,7 @@ cost(X,Y,C) :- cost(Y,X,C).
 duration(X,Y,1) :- cost(X,Y,_C).
 
 available(1,2).available(2,4).available(3,6).
-available(4,10).available(4,12).available(4,14).
+available(4,10).available(5,12).
 
 serviceTime(X,1) :- node(X).
 
