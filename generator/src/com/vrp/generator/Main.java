@@ -42,7 +42,7 @@ public class Main {
                 if (f.exists())
                     f.delete();
 
-                Instance inst = generator.generate(size, true);
+                Instance inst = generator.generate(size, timeWindowed);
 
                 BufferedWriter writer = new BufferedWriter(new FileWriter(f));
                 writer.write(inst.toString());

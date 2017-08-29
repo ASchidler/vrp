@@ -10,7 +10,7 @@ public class IncreasingCycleSizeGenerator extends BaseCycleGenerator {
 
     @Override
     public Instance generate(int size, boolean timeWindowed) {
-        Instance inst = new Instance(size * 3, true);
+        Instance inst = new Instance(size * 2 + 2, true);
 
         for(int i = 1; i <= 5; i++) {
             inst.getVehicles().add("v"+ i);

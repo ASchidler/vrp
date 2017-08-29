@@ -9,7 +9,7 @@ import com.vrp.generator.Node;
 public class IncreasingCycleNumberGenerator extends BaseCycleGenerator {
     @Override
     public Instance generate(int size, boolean timeWindowed) {
-        Instance inst = new Instance(30, true);
+        Instance inst = new Instance(22, true);
 
         for(int i = 1; i <= size; i++) {
             inst.getVehicles().add("v"+ i);
