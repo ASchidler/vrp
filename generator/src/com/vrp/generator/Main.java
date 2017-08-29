@@ -1,6 +1,7 @@
 package com.vrp.generator;
 
-import com.vrp.generator.generators.CycleGenerator;
+import com.vrp.generator.generators.IncreasingCycleNumberGenerator;
+import com.vrp.generator.generators.IncreasingCycleSizeGenerator;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,7 +14,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException{
         List<IGenerator> generators = new LinkedList<>();
-        generators.add(new CycleGenerator());
+        generators.add(new IncreasingCycleNumberGenerator());
+        generators.add(new IncreasingCycleSizeGenerator());
         generate(true, generators);
         generate(false, generators);
 
