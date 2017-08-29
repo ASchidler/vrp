@@ -20,9 +20,11 @@ public class Instance {
     private int limit;
     private boolean symmetric;
     private List<String> vehicles;
+    private Node baseNode = new Node("0", 0);
 
     public Instance(int limit, boolean symmetric) {
         this.nodes = new LinkedList<>();
+        this.getNodes().add(baseNode);
         this.edges = new LinkedList<>();
         this.limit = limit;
         this.symmetric = symmetric;
@@ -69,5 +71,9 @@ public class Instance {
 
     public List<String> getVehicles() {
         return vehicles;
+    }
+
+    public Node getBaseNode() {
+        return baseNode;
     }
 }

@@ -9,8 +9,8 @@ import java.util.List;
  * Created by asc on 29.08.2017.
  */
 public abstract class BaseCycleGenerator implements IGenerator {
-    protected void generatorCycle(int cycleSize, String cycleName, Node baseNode, Instance instance, boolean timeWindowed) {
-        Node lastNode = baseNode;
+    protected void generatorCycle(int cycleSize, String cycleName, Instance instance, boolean timeWindowed) {
+        Node lastNode = instance.getBaseNode();
 
         for(int i=1; i <= cycleSize; i++) {
             Node n = null;

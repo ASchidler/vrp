@@ -10,11 +10,10 @@ public class IncreasingCycleNumberGenerator extends BaseCycleGenerator {
     @Override
     public Instance generate(int size, boolean timeWindowed) {
         Instance inst = new Instance(30, true);
-        Node base = new Node("0", 0);
 
         for(int i = 1; i <= size; i++) {
             inst.getVehicles().add("v"+ i);
-            generatorCycle(10, String.format("c%dx", i), base, inst, timeWindowed);
+            generatorCycle(10, String.format("c%dx", i),inst, timeWindowed);
         }
 
         return inst;

@@ -10,12 +10,11 @@ public class IncreasingCycleSizeGenerator extends BaseCycleGenerator {
 
     @Override
     public Instance generate(int size, boolean timeWindowed) {
-        Instance inst = new Instance(20, true);
-        Node base = new Node("0", 0);
+        Instance inst = new Instance(size * 3, true);
 
         for(int i = 1; i <= 5; i++) {
             inst.getVehicles().add("v"+ i);
-            generatorCycle(size, String.format("c%dx", i), base, inst, timeWindowed);
+            generatorCycle(size, String.format("c%dx", i), inst, timeWindowed);
         }
 
         return inst;
