@@ -18,12 +18,13 @@ def on_model(model):
 			if s.name == 'vehicle':
 				vehicles[str(s.arguments[0])] = random.uniform(0, 1),random.uniform(0, 1),random.uniform(0, 1)
 		
-		node_colors = []
+		node_colors = dict()
+		node_colors["0"] = 0,0,0
 		
 		for s in last_model.symbols(atoms=True):
 			if s.name == 'services':
 				G.add_node(str(s.arguments[0]))
-				node_colors.append(vehicles[str(s.arguments[1])])
+				node_colors[str(s.arguments[0])] = vehicles[str(s.arguments[1])]
 		
 		edge_colors = dict()
 		edge_labels = dict()
@@ -42,12 +43,16 @@ def on_model(model):
 					edge_colors[c_key] = vehicles[str(s.arguments[2])]
 					edge_labels[c_key] = str(s.arguments[2])
 					
-		final_colors = []
+		final_edge_colors = []
 		for (u,v) in G.edges():
-			final_colors.append(edge_colors[u,v])
+			final_edge_colors.append(edge_colors[u,v])
+			
+		final_node_colors=[]
+		for u in G.nodes():
+			final_node_colors.append(node_colors[u])
 		
 		pos=nx.spring_layout(G)
-		nx.draw_networkx(G,pos,arrows=True, node_color=node_colors, edge_color=final_colors)
+		nx.draw_networkx(G,pos,arrows=True, node_color=final_node_colors, edge_color=final_edge_colors)
 		nx.draw_networkx_edge_labels(G,pos, edge_labels=edge_labels)
 		
 		vehicle_names = []
