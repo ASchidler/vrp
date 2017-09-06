@@ -1,14 +1,4 @@
 %This solution has one limitation. One node may be used several times, but a path cannot, i.e. the node x can be used several times in a route, but not x-y-z
-routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
-
-% order visited nodes
-routeOrder(0,0,0,V) :- vehicle(V).
-routeOrder(X,Y,N+1,V) :- routeOrder(_,X,N,V), route(X,Y,V), routeLength(V,M), N <= M,
-	not ordinalNotUsable(X,Y,N+1,V),
-	not ordinalNotUsable(Y,N+1,V).
-
-ordinalNotUsable(X,Y,K,V) :- routeOrder(X,Y,N,V), routeLength(V,M), K = N+1..M.
-ordinalNotUsable(Z,N,V) :- routeOrder(X,Y,N,V), node(Z), route(X,Z,V), Z != Y.
 
 % At time 0 we are at the depot. Since we can wait, this is not a problem
 leftAt(0,0,V,0) :- vehicle(V).

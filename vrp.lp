@@ -10,6 +10,13 @@ node(Y) :- cost(_,Y,_).
 
 
 % Verify that the routes are cycles, i.e. they end at 0 and they are connected
+connected(Y,V) :- route(0,Y,V).
+connected(Y,V) :- route(X,Y,V), connected(X,V).
+:- route(0,_,V), not connected(0,V).
+:- route(X,Y,V), not connected(Y,V), Y != 0.
+:- route(X,Y,V), not connected(X,V), X != 0.
+
+% Check that the routes really terminate at 0. This may fail for the above statements if a vehicle drives several routes
 terminates(X,V) :- route(X,0,V).
 terminates(X,V) :- route(X,Y,V), terminates(Y,V).
 :- route(_,Y,V), Y !=0, not terminates(Y,V).
@@ -20,12 +27,22 @@ starts(V) :- route(0,_,V).
 {services(Y,V) : route(X,Y,V)}=1 :- node(Y), Y != 0.
 
 % Verify that each vehicle does not take too long
+% This only approximates the solution, as multiple visits to the same node may dilute this calcualation
 :- vehicle(V), 
 	#sum{ST,X : serviceTime(X,ST), services(X,V)} = S, 
 	#sum{D,X,Y : duration(X,Y,D), route(X,Y,V)} = T, 
 	timeLimit(L), 
 	S + T > L.
-	
+
+% order visited nodes
+routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
+routeOrder(0,0,0,V) :- vehicle(V).
+routeOrder(X,Y,N+1,V) :- routeOrder(_,X,N,V), route(X,Y,V), routeLength(V,M), N <= M,
+	not ordinalNotUsable(X,Y,N+1,V),
+	not ordinalNotUsable(Y,N+1,V).
+
+ordinalNotUsable(X,Y,K,V) :- routeOrder(X,Y,N,V), routeLength(V,M), K = N+1..M.
+ordinalNotUsable(Z,N,V) :- routeOrder(X,Y,N,V), node(Z), route(X,Z,V), Z != Y.
 	
 % Optimize for costs
 #minimize{C,X,Y,V : route(X,Y,V), cost(X,Y,C)}.
