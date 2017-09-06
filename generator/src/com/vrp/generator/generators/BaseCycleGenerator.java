@@ -28,5 +28,7 @@ public abstract class BaseCycleGenerator implements IGenerator {
             instance.getEdges().add(e);
             lastNode = n;
         }
+
+        instance.getEdges().add(new Edge(1,1, lastNode, instance.getBaseNode()));
     }
 }
