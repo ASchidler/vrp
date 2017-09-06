@@ -8,7 +8,9 @@ import random
 last_services = None
 last_routes = None
 last_vehicles = None
+last_order = None
 
+#Is called whenever a model is found
 def on_model(model):
 	print model
 	
@@ -16,6 +18,7 @@ def on_model(model):
 	global last_services
 	global last_routes
 	global last_vehicles
+	global last_order
 	
 	last_vehicles = []
 	for s in model.symbols(atoms=True):
@@ -31,13 +34,22 @@ def on_model(model):
 	for s in model.symbols(atoms=True):
 		if s.name == 'route':
 			last_routes.append((str(s.arguments[0]), str(s.arguments[1]), str(s.arguments[2])))
+			
+	last_order = []
+	for s in model.symbols(atoms=True):
+		if s.name == 'routeOrder':
+			last_order.append((str(s.arguments[0]), str(s.arguments[1]), int(str(s.arguments[2])), str(s.arguments[3])))
  
 def on_finish(res):
 	print res
 
 	global last_routes
+	global last_vehicles
 	
+	#Check if there is a model
 	if last_routes is not None:
+		output_routes()
+		#create and draw graph
 		G = generate_graph()
 		pos=nx.spring_layout(G)
 		vehicles = dict()
@@ -64,8 +76,6 @@ def generate_graph():
 		
 def draw_nodes(vehicles, G, pos):
 	global last_services
-	global last_routes
-	global last_vehicles
 	
 	#Color nodes depending on who is servicing them
 	node_colors = dict()
@@ -81,9 +91,7 @@ def draw_nodes(vehicles, G, pos):
 	nx.draw_networkx_nodes(G,pos,node_color=final_node_colors)
 	
 def draw_edges(vehicles, G, pos):
-	global last_services
 	global last_routes
-	global last_vehicles
 	
 	#Add edges based on routes. If two vehicles share an edge, mix the colors
 	edge_colors = dict()
@@ -119,7 +127,31 @@ def draw_legend(vehicles):
 		vehicle_patches.append(ptch.Patch(color=v))
 		
 	plt.figlegend(vehicle_patches, vehicle_names,'lower left')
+
+def output_routes():
+	global last_order
+	global last_vehicles
 	
+	vehicle_routes = dict()
+	bla = dict({"aaa":"a"})
+	
+	for veh in last_vehicles:
+		vehicle_routes[veh] = []
+			
+	for r in last_order:
+		if r[0] != r[1]:
+			vehicle_routes[r[3]].append((r[1],r[2]))
+		
+	for k,v in vehicle_routes.iteritems():
+		#sorted(v, key=lambda x: x[1])
+		print k
+		output = k +": 0"
+		
+		for n in v:
+			output += " - "+n[0]
+		
+		print output
+			
 def main(prg):
 	prg.ground([("base", [])])
 	prg.solve(on_model=on_model, on_finish=on_finish)
