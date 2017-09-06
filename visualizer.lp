@@ -89,6 +89,7 @@ def draw_nodes(vehicles, G, pos):
 		final_node_colors.append(node_colors[u])
 			
 	nx.draw_networkx_nodes(G,pos,node_color=final_node_colors)
+	nx.draw_networkx_labels(G,pos)
 	
 def draw_edges(vehicles, G, pos):
 	global last_routes
@@ -133,7 +134,6 @@ def output_routes():
 	global last_vehicles
 	
 	vehicle_routes = dict()
-	bla = dict({"aaa":"a"})
 	
 	for veh in last_vehicles:
 		vehicle_routes[veh] = []
@@ -143,8 +143,7 @@ def output_routes():
 			vehicle_routes[r[3]].append((r[1],r[2]))
 		
 	for k,v in vehicle_routes.iteritems():
-		#sorted(v, key=lambda x: x[1])
-		print k
+		sorted(v, key=lambda x: x[1])
 		output = k +": 0"
 		
 		for n in v:
