@@ -47,3 +47,5 @@ Intermediate predicates
 reached(x) - Used to check if all nodes are reached by a vehicle
 connected(x,v) - Used to check that x is on a connected tour of vehicle v
 reachedAt(x,t) - Used to check the time window constraints for the TW extension. Signifies that node x has been reached at time t
+
+For the test instances, there is a sketch of the graph. In the sketch costs are black and time durations are in color.
