@@ -37,7 +37,7 @@ starts(V) :- route(0,_,V).
 % order visited nodes
 routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
 routeOrder(0,0,0,V) :- vehicle(V).
-routeOrder(X,Y,N+1,V) :- routeOrder(_,X,N,V), route(X,Y,V), routeLength(V,M), N <= M,
+routeOrder(X,Y,N+1,V) :- routeOrder(_,X,N,V), route(X,Y,V), routeLength(V,M), N < M,
 	not ordinalNotUsable(X,Y,N+1,V),
 	not ordinalNotUsable(Y,N+1,V).
 
