@@ -1,5 +1,6 @@
 % Case where two vehicles share the same first node
 % This illustrates a bug, where the first node needed to be available, no matter if the vehicle served it or not.
+% Expected solution: 0-1-2-3-0, 0-1-4-5-0
 vehicle(a).vehicle(b).
 
 cost(0,1,1).cost(1,2,1).cost(2,3,1).cost(3,0,1).

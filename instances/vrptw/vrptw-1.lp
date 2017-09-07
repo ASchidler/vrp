@@ -1,16 +1,14 @@
+% Extension of the simple cycle instance. Two cycles, but this time the two cycles are connected with higher cost edges
+% Therefore the more cost reduced version would be to not use the edges. But the time windows make this necessary
+% I.e. the expected cycles are: 1-2-6, 4-5-6. But a more efficient version exists: 0-6-5-4-5-3-0, 0-1-2-1-0; this only uses one high-cost edge
 vehicle(a).vehicle(b).
 
-node(0).node(1).node(2).node(3).node(4).node(5).node(6).
 cost(0,1,1).cost(1,2,1).cost(2,3,1).cost(3,0,1).
 cost(0,4,1).cost(4,5,1).cost(5,6,1).cost(6,0,1).
 cost(2,6,5).cost(5,3,5).
 cost(X,Y,C) :- cost(Y,X,C).
 
-
-duration(0,1,1).duration(1,2,1).duration(2,3,1).duration(3,0,1).
-duration(0,4,1).duration(4,5,1).duration(5,6,1).duration(6,0,1).
-duration(2,6,1).duration(5,3,1).
-duration(X,Y,D) :- duration(Y,X,D).
+duration(X,Y,1) :- cost(X,Y,_).
 
 available(1,2).available(1,3).
 available(2,4).available(2,5).
