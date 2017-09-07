@@ -45,6 +45,8 @@ ordinalNotUsable(X,Y,K,V) :- routeOrder(X,Y,N,V), routeLength(V,M), K = N+1..M.
 ordinalNotUsable(Z,N,V) :- routeOrder(X,Y,N,V), node(Z), route(X,Z,V), Z != Y.
 ordinaled(X,Y,V) :- routeOrder(X,Y,_,V).
 :- route(X,Y,V), not ordinaled(X,Y,V).
+% This prevents from routes where one path is used several times. This is in principle legitimate, but not supported by this application
+:- routeLength(V,N), not routeOrder(_,0,N,V).
 	
 % Optimize for costs
 #minimize{C,X,Y,V : route(X,Y,V), cost(X,Y,C)}.
