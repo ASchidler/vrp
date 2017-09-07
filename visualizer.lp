@@ -58,7 +58,7 @@ def on_finish(res):
 		output_routes()
 		#create and draw graph
 		G = generate_graph()
-		pos=nx.spring_layout(G)
+		pos=nx.circular_layout(G)
 		vehicles = dict()
 		
 		#Generate random colors for the vehicles
