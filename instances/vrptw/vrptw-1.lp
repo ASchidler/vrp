@@ -14,10 +14,10 @@ duration(X,Y,D) :- duration(Y,X,D).
 
 available(1,2).available(1,3).
 available(2,4).available(2,5).
-available(3,10).available(3,11).
+available(3,14).available(3,15).
 
-available(4,6).available(4,7).
-available(5,8).available(5,9).
+available(4,10).available(4,11).
+available(5,12).available(5,13).
 available(6,6).available(6,7).
 
 serviceTime(X,1) :- node(X).
