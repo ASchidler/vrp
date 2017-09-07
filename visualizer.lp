@@ -9,6 +9,7 @@ last_services = None
 last_routes = None
 last_vehicles = None
 last_order = None
+last_edges = None
 
 #Is called whenever a model is found
 def on_model(model):
@@ -19,6 +20,7 @@ def on_model(model):
 	global last_routes
 	global last_vehicles
 	global last_order
+	global last_edges
 	
 	last_vehicles = []
 	for s in model.symbols(atoms=True):
@@ -40,6 +42,11 @@ def on_model(model):
 		if s.name == 'routeOrder':
 			last_order.append((str(s.arguments[0]), str(s.arguments[1]), int(str(s.arguments[2])), str(s.arguments[3])))
  
+	last_edges = []
+	for s in model.symbols(atoms=True):
+		if s.name == 'edge':
+			last_edges.append((str(s.arguments[0]), str(s.arguments[1])))
+			
 def on_finish(res):
 	print res
 
@@ -67,7 +74,8 @@ def on_finish(res):
 
 def generate_graph():
 	G=nx.DiGraph()
-	for s in last_routes:
+	global last_edges
+	for s in last_edges:
 		G.add_node(s[0])
 		G.add_node(s[1])
 		G.add_edge(s[0],s[1])
@@ -102,7 +110,7 @@ def draw_edges(vehicles, G, pos):
 		c_key = s[0],s[1]
 		#Case edge is shared
 		if (c_key in edge_colors):
-			edge_labels[c_key] = edge_labels[c_key] + "," + s[2]
+			edge_labels[c_key].append(s[2])
 			c_color = edge_colors[c_key]
 			new_color = vehicles[s[2]]
 			c_color = (c_color[0] + new_color[0]) / 2, (c_color[1] + new_color[1]) / 2, (c_color[2] + new_color[2]) / 2
@@ -110,15 +118,37 @@ def draw_edges(vehicles, G, pos):
 		#First vehicle to use the edge
 		else:
 			edge_colors[c_key] = vehicles[s[2]]
-			edge_labels[c_key] = s[2]
+			edge_labels[c_key] = [s[2]]
 
 	#Transform structures, so they can be used to draw
+	final_edge_labels = dict()
+	
 	final_edge_colors = []
 	for (u,v) in G.edges():
-		final_edge_colors.append(edge_colors[u,v])
+		#Is the edge used by a vehicle?
+		if (u,v) in edge_colors:
+			final_edge_colors.append(edge_colors[u,v])
+			
+			#Label both directions the same, otherwise one might block the other and the labelling is wrong
+			if (v,u) in edge_labels:
+				temp_list = edge_labels[u,v] + edge_labels[v,u]
+			else:
+				temp_list = edge_labels[u,v]
+				
+			#Eliminate duplicate entries and make a single string
+			seen = set()
+			temp_list2 = [x for x in temp_list if not (x in seen or seen.add(x))]
+
+			if len(temp_list2) > 1:
+				final_edge_labels[u,v] = ",".join(temp_list2)
+			else:
+				final_edge_labels[u,v] = temp_list2[0] #join seems to product no string if only one element exists
+		# Not used edges are grey
+		else:
+			final_edge_colors.append((0.95,0.95,0.95))
 	
 	nx.draw_networkx_edges(G,pos, edge_color=final_edge_colors)
-	nx.draw_networkx_edge_labels(G,pos, edge_labels=edge_labels)
+	nx.draw_networkx_edge_labels(G,pos, edge_labels=final_edge_labels)
 
 def draw_legend(vehicles):
 	vehicle_names = []
