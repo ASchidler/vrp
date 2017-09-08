@@ -8,23 +8,21 @@ node(Y) :- cost(_,Y,_).
 { route(X,Y,V): edge(X,Y),vehicle(V)} >= 1 :- node(Y), Y != 0.
 { route(Y,Z,V): edge(Y,Z)} >= 1 :- node(Y), route(X,Y,V), Y != 0.
 
+% Decide which vehicle services which node
+{services(Y,V) : route(X,Y,V)}=1 :- node(Y), Y != 0.
 
 % Verify that the routes are cycles, i.e. they end at 0 and they are connected
+starts(V) :- route(0,_,V).
 connected(Y,V) :- route(0,Y,V).
 connected(Y,V) :- route(X,Y,V), connected(X,V).
-:- route(0,_,V), not connected(0,V).
-:- route(X,Y,V), not connected(Y,V), Y != 0.
-:- route(X,Y,V), not connected(X,V), X != 0.
+:- starts(V), not connected(0,V).
+:- route(X,Y,V), not connected(Y,V), Y > 0.
+:- route(X,Y,V), not connected(X,V), X > 0.
 
 % Check that the routes really terminate at 0. This may fail for the above statements if a vehicle drives several routes
 terminates(X,V) :- route(X,0,V).
 terminates(X,V) :- route(X,Y,V), terminates(Y,V).
 :- route(_,Y,V), Y !=0, not terminates(Y,V).
-starts(V) :- route(0,_,V).
-:- route(X,Y,V), not starts(V).
-
-% Decide which vehicle services which node
-{services(Y,V) : route(X,Y,V)}=1 :- node(Y), Y != 0.
 
 % Verify that each vehicle does not take too long
 % This only approximates the solution, as multiple visits to the same node may dilute this calcualation
@@ -37,9 +35,10 @@ starts(V) :- route(0,_,V).
 % order visited nodes
 routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
 routeOrder(0,0,0,V) :- vehicle(V).
-routeOrder(X,Y,N+1,V) :- routeOrder(_,X,N,V), route(X,Y,V), routeLength(V,M), N < M,
+routeOrder(X,Y,N+1,V) :- nodeOrder(X,N,V), route(X,Y,V), routeLength(V,M), N < M,
 	not ordinalNotUsable(X,Y,N+1,V),
 	not ordinalNotUsable(Y,N+1,V).
+nodeOrder(X,N,V) :- routeOrder(_,X,N,V).
 
 ordinalNotUsable(X,Y,K,V) :- routeOrder(X,Y,N,V), routeLength(V,M), K = N+1..M.
 ordinalNotUsable(Z,N,V) :- routeOrder(X,Y,N,V), node(Z), route(X,Z,V), Z != Y.
