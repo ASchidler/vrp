@@ -36,12 +36,11 @@ terminates(X,V) :- route(X,Y,V), terminates(Y,V).
 routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
 routeOrder(0,0,0,V) :- vehicle(V).
 routeOrder(X,Y,N+1,V) :- nodeOrder(X,N,V), route(X,Y,V), routeLength(V,M), N < M,
-	not ordinalNotUsable(X,Y,N+1,V),
-	not ordinalNotUsable(Y,N+1,V).
+	#count{X',Y' : routeOrder(X',Y',N+1,V), X' != X} = 0,
+	#count{X',Y' : routeOrder(X',Y',N+1,V), Y' != Y} = 0,
+	#count{N' : routeOrder(X,Y,N',V), N' != N + 1} = 0.
+	
 nodeOrder(X,N,V) :- routeOrder(_,X,N,V).
-
-ordinalNotUsable(X,Y,K,V) :- routeOrder(X,Y,N,V), routeLength(V,M), K = N+1..M.
-ordinalNotUsable(Z,N,V) :- routeOrder(X,Y,N,V), node(Z), route(X,Z,V), Z != Y.
 ordinaled(X,Y,V) :- routeOrder(X,Y,_,V).
 :- route(X,Y,V), not ordinaled(X,Y,V).
 % This prevents from routes where one path is used several times. This is in principle legitimate, but not supported by this application
