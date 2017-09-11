@@ -16,8 +16,8 @@ starts(V) :- route(0,_,V).
 connected(Y,V) :- route(0,Y,V).
 connected(Y,V) :- route(X,Y,V), connected(X,V).
 :- starts(V), not connected(0,V).
-:- route(X,Y,V), not connected(Y,V), Y > 0.
-:- route(X,Y,V), not connected(X,V), X > 0.
+:- route(X,Y,V), not connected(Y,V), Y != 0.
+:- route(X,Y,V), not connected(X,V), X != 0.
 
 % Check that the routes really terminate at 0. This may fail for the above statements if a vehicle drives several routes
 terminates(X,V) :- route(X,0,V).
@@ -36,8 +36,7 @@ terminates(X,V) :- route(X,Y,V), terminates(Y,V).
 routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
 routeOrder(0,0,0,V) :- vehicle(V).
 routeOrder(X,Y,N+1,V) :- nodeOrder(X,N,V), route(X,Y,V), routeLength(V,M), N < M,
-	#count{X',Y' : routeOrder(X',Y',N+1,V), X' != X} = 0,
-	#count{X',Y' : routeOrder(X',Y',N+1,V), Y' != Y} = 0,
+	#count{X',Y' : routeOrder(X',Y',N+1,V), node(X',Y) != node(X,Y)} = 0,
 	#count{N' : routeOrder(X,Y,N',V), N' != N + 1} = 0.
 	
 nodeOrder(X,N,V) :- routeOrder(_,X,N,V).
