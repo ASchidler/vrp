@@ -12,7 +12,7 @@ public class IncreasingNodesConnectedGenerator extends BaseConnectedGenerator {
     @Override
     public Instance generate(int size, boolean timeWindowed) {
         Instance inst = new Instance((size * 3) / 5 + 3, true);
-        generate(size, true, 5, inst);
+        generate(size, timeWindowed, 5, inst);
         return inst;
     }
 
