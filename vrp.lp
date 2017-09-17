@@ -8,11 +8,16 @@ node(Y) :- cost(_,Y,_).
 { route(X,Y,V): edge(X,Y),vehicle(V)} >= 1 :- node(Y), Y != 0.
 { route(Y,Z,V): edge(Y,Z)} >= 1 :- node(Y), route(X,Y,V), Y != 0.
 
+% Decide which vehicle services which node
+{services(Y,V) : route(X,Y,V)}=1 :- node(Y), Y != 0.
+%Sanity check
+:- services(Y,V), services(Y,V'), V != V'.
 
 % Verify that the routes are cycles, i.e. they end at 0 and they are connected
+starts(V) :- route(0,_,V).
 connected(Y,V) :- route(0,Y,V).
 connected(Y,V) :- route(X,Y,V), connected(X,V).
-:- route(0,_,V), not connected(0,V).
+:- starts(V), not connected(0,V).
 :- route(X,Y,V), not connected(Y,V), Y != 0.
 :- route(X,Y,V), not connected(X,V), X != 0.
 
@@ -20,11 +25,6 @@ connected(Y,V) :- route(X,Y,V), connected(X,V).
 terminates(X,V) :- route(X,0,V).
 terminates(X,V) :- route(X,Y,V), terminates(Y,V).
 :- route(_,Y,V), Y !=0, not terminates(Y,V).
-starts(V) :- route(0,_,V).
-:- route(X,Y,V), not starts(V).
-
-% Decide which vehicle services which node
-{services(Y,V) : route(X,Y,V)}=1 :- node(Y), Y != 0.
 
 % Verify that each vehicle does not take too long
 % This only approximates the solution, as multiple visits to the same node may dilute this calcualation
@@ -37,12 +37,11 @@ starts(V) :- route(0,_,V).
 % order visited nodes
 routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
 routeOrder(0,0,0,V) :- vehicle(V).
-routeOrder(X,Y,N+1,V) :- routeOrder(_,X,N,V), route(X,Y,V), routeLength(V,M), N < M,
-	not ordinalNotUsable(X,Y,N+1,V),
-	not ordinalNotUsable(Y,N+1,V).
-
-ordinalNotUsable(X,Y,K,V) :- routeOrder(X,Y,N,V), routeLength(V,M), K = N+1..M.
-ordinalNotUsable(Z,N,V) :- routeOrder(X,Y,N,V), node(Z), route(X,Z,V), Z != Y.
+routeOrder(X,Y,N+1,V) :- nodeOrder(X,N,V), route(X,Y,V), routeLength(V,M), N < M,
+	#count{X',Y' : routeOrder(X',Y',N+1,V), node(X',Y) != node(X,Y)} = 0,
+	#count{N' : routeOrder(X,Y,N',V), N' != N + 1} = 0.
+	
+nodeOrder(X,N,V) :- routeOrder(_,X,N,V).
 ordinaled(X,Y,V) :- routeOrder(X,Y,_,V).
 :- route(X,Y,V), not ordinaled(X,Y,V).
 % This prevents from routes where one path is used several times. This is in principle legitimate, but not supported by this application
