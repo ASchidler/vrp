@@ -35,6 +35,7 @@ Constraints  : 333093   (Binary:  85.8% Ternary:   7.0% Other:   7.2%)
 
 
 connectedVehicles-1 -> Grounding
+
 cycleNumber-3 -> Optimality
 Models       : 1
   Optimum    : yes
@@ -138,9 +139,156 @@ Variables    : 86281    (Eliminated:    0 Frozen:  358)
 Constraints  : 1198786  (Binary:  92.8% Ternary:   3.5% Other:   3.7%)
 
 
+
+
+
 VRPTW:
 connectedNodes-3 -> Optimality
 connectedVehicles-1 -> Grounding
-cycleNumber-2 -> Optimization
 cycleSize-3 -> Optimality
 simpleCycle-6 -> Optimality
+
+
+
+
+After VRP Opt:
+
+
+connectedNodes-4 -> Optimality
+Models       : 6
+  Optimum    : yes
+Optimization : 10
+Calls        : 1
+Time         : 126.010s (Solving: 115.77s 1st Model: 32.23s Unsat: 78.79s)
+CPU Time     : 118.467s
+
+Choices      : 683503
+Conflicts    : 524297   (Analyzed: 524296)
+Restarts     : 1404     (Average: 373.43 Last: 3412)
+Model-Level  : 46.8
+Problems     : 1        (Average Length: 0.00 Splits: 0)
+Lemmas       : 537602   (Deleted: 402279)
+  Binary     : 2629     (Ratio:   0.49%)
+  Ternary    : 8024     (Ratio:   1.49%)
+  Conflict   : 524296   (Average Length:   14.0 Ratio:  97.52%)
+  Loop       : 13306    (Average Length:   11.1 Ratio:   2.48%)
+  Other      : 0        (Average Length:    0.0 Ratio:   0.00%)
+Backjumps    : 524296   (Average:  1.28 Max:  92 Sum: 669911)
+  Executed   : 524296   (Average:  1.28 Max:  92 Sum: 669911 Ratio: 100.00%)
+  Bounded    : 0        (Average:  0.00 Max:   0 Sum:      0 Ratio:   0.00%)
+
+Rules        : 2162909  (Original: 1941159)
+  Choice     : 155
+  Minimize   : 1
+Atoms        : 131479
+Bodies       : 1218207  (Original: 1226732)
+  Count      : 140      (Original: 8915)
+Equivalences : 190831   (Atom=Atom: 1014 Body=Body: 281 Other: 189536)
+Tight        : No       (SCCs: 225 Non-Hcfs: 0 Nodes: 434585 Gammas: 0)
+Variables    : 804960   (Eliminated:    0 Frozen: 434825)
+Constraints  : 4748090  (Binary:  83.1% Ternary:   1.9% Other:  15.0%)
+
+
+connectedVehicles-1 -> Grounding
+
+cycleNumber-2 -> Optimization
+Models       : 1
+  Optimum    : yes
+Optimization : 11
+Calls        : 1
+Time         : 1.817s (Solving: 0.56s 1st Model: 0.47s Unsat: 0.09s)
+CPU Time     : 0.811s
+
+Choices      : 587
+Conflicts    : 335      (Analyzed: 334)
+Restarts     : 4        (Average: 83.50 Last: 22)
+Model-Level  : 5.0
+Problems     : 1        (Average Length: 0.00 Splits: 0)
+Lemmas       : 2125     (Deleted: 0)
+  Binary     : 53       (Ratio:   2.49%)
+  Ternary    : 728      (Ratio:  34.26%)
+  Conflict   : 334      (Average Length:   12.9 Ratio:  15.72%)
+  Loop       : 1791     (Average Length:    8.4 Ratio:  84.28%)
+  Other      : 0        (Average Length:    0.0 Ratio:   0.00%)
+Backjumps    : 334      (Average:  1.75 Max:  41 Sum:    586)
+  Executed   : 334      (Average:  1.75 Max:  41 Sum:    586 Ratio: 100.00%)
+  Bounded    : 0        (Average:  0.00 Max:   0 Sum:      0 Ratio:   0.00%)
+
+Rules        : 292834   (Original: 280925)
+  Choice     : 40
+  Minimize   : 1
+Atoms        : 24053
+Bodies       : 176930   (Original: 177687)
+  Count      : 28       (Original: 797)
+Equivalences : 35665    (Atom=Atom: 166 Body=Body: 26 Other: 35473)
+Tight        : No       (SCCs: 43 Non-Hcfs: 0 Nodes: 44130 Gammas: 0)
+Variables    : 81694    (Eliminated:    0 Frozen: 44186)
+Constraints  : 453393   (Binary:  82.0% Ternary:   5.6% Other:  12.4%)
+
+cycleSize-3 -> Optimality
+Models       : 6
+  Optimum    : yes
+Optimization : 15
+Calls        : 1
+Time         : 40.379s (Solving: 32.53s 1st Model: 27.37s Unsat: 4.31s)
+CPU Time     : 34.897s
+
+Choices      : 107376
+Conflicts    : 47548    (Analyzed: 47547)
+Restarts     : 187      (Average: 254.26 Last: 69)
+Model-Level  : 13.5
+Problems     : 1        (Average Length: 0.00 Splits: 0)
+Lemmas       : 71273    (Deleted: 28086)
+  Binary     : 3040     (Ratio:   4.27%)
+  Ternary    : 7548     (Ratio:  10.59%)
+  Conflict   : 47547    (Average Length:   24.7 Ratio:  66.71%)
+  Loop       : 23726    (Average Length:   17.5 Ratio:  33.29%)
+  Other      : 0        (Average Length:    0.0 Ratio:   0.00%)
+Backjumps    : 47547    (Average:  2.24 Max: 145 Sum: 106380)
+  Executed   : 47547    (Average:  2.24 Max: 145 Sum: 106380 Ratio: 100.00%)
+  Bounded    : 0        (Average:  0.00 Max:   0 Sum:      0 Ratio:   0.00%)
+
+Rules        : 1638274  (Original: 1415984)
+  Choice     : 160
+  Minimize   : 1
+Atoms        : 152334
+Bodies       : 1027182  (Original: 1035692)
+  Count      : 180      (Original: 8940)
+Equivalences : 235686   (Atom=Atom: 1334 Body=Body: 281 Other: 234071)
+Tight        : No       (SCCs: 175 Non-Hcfs: 0 Nodes: 368935 Gammas: 0)
+Variables    : 669390   (Eliminated:    0 Frozen: 369215)
+Constraints  : 3604310  (Binary:  81.4% Ternary:   4.4% Other:  14.2%)
+
+simpleCycle-6 -> Optimality
+Models       : 3
+  Optimum    : yes
+Optimization : 26
+Calls        : 1
+Time         : 177.339s (Solving: 160.41s 1st Model: 135.90s Unsat: 18.20s)
+CPU Time     : 164.097s
+
+Choices      : 44473
+Conflicts    : 14738    (Analyzed: 14737)
+Restarts     : 75       (Average: 196.49 Last: 121)
+Model-Level  : 7.0
+Problems     : 1        (Average Length: 0.00 Splits: 0)
+Lemmas       : 414273   (Deleted: 15846)
+  Binary     : 96264    (Ratio:  23.24%)
+  Ternary    : 273080   (Ratio:  65.92%)
+  Conflict   : 14737    (Average Length:  197.2 Ratio:   3.56%)
+  Loop       : 399536   (Average Length:   14.0 Ratio:  96.44%)
+  Other      : 0        (Average Length:    0.0 Ratio:   0.00%)
+Backjumps    : 14737    (Average:  3.02 Max: 248 Sum:  44440)
+  Executed   : 14737    (Average:  3.02 Max: 248 Sum:  44440 Ratio: 100.00%)
+  Bounded    : 0        (Average:  0.00 Max:   0 Sum:      0 Ratio:   0.00%)
+
+Rules        : 4206176  (Original: 4154666)
+  Choice     : 100
+  Minimize   : 1
+Atoms        : 164225
+Bodies       : 2336722  (Original: 2339162)
+  Count      : 50       (Original: 2492)
+Equivalences : 234740   (Atom=Atom: 258 Body=Body: 26 Other: 234456)
+Tight        : No       (SCCs: 103 Non-Hcfs: 0 Nodes: 345458 Gammas: 0)
+Variables    : 604505   (Eliminated:    0 Frozen: 345556)
+Constraints  : 4339048  (Binary:  86.1% Ternary:   4.3% Other:   9.7%)

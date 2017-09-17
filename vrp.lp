@@ -10,6 +10,8 @@ node(Y) :- cost(_,Y,_).
 
 % Decide which vehicle services which node
 {services(Y,V) : route(X,Y,V)}=1 :- node(Y), Y != 0.
+%Sanity check
+:- services(Y,V), services(Y,V'), V != V'.
 
 % Verify that the routes are cycles, i.e. they end at 0 and they are connected
 starts(V) :- route(0,_,V).
