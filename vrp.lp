@@ -4,51 +4,45 @@ edge(X,Y) :- cost(X,Y,_).
 node(X) :- cost(X,_,_).
 node(Y) :- cost(_,Y,_).
 
-% Build routes, each node has at least one route incoming and at least one outgoing
-{ route(X,Y,V): edge(X,Y),vehicle(V)} >= 1 :- node(Y), Y != 0.
-{ route(Y,Z,V): edge(Y,Z)} >= 1 :- node(Y), route(X,Y,V), Y != 0.
-
 % Decide which vehicle services which node
 {services(Y,V) : route(X,Y,V)}=1 :- node(Y), Y != 0.
+serviced(X) :- services(X,V).
 %Sanity check
 :- services(Y,V), services(Y,V'), V != V'.
 
-% Verify that the routes are cycles, i.e. they end at 0 and they are connected
-starts(V) :- route(0,_,V).
-connected(Y,V) :- route(0,Y,V).
-connected(Y,V) :- route(X,Y,V), connected(X,V).
-:- starts(V), not connected(0,V).
-:- route(X,Y,V), not connected(Y,V), Y != 0.
-:- route(X,Y,V), not connected(X,V), X != 0.
+%
+%
+% Guess routes
+routeOrder(0,0,0,V) :- vehicle(V).
 
-% Check that the routes really terminate at 0. This may fail for the above statements if a vehicle drives several routes
-terminates(X,V) :- route(X,0,V).
-terminates(X,V) :- route(X,Y,V), terminates(Y,V).
-:- route(_,Y,V), Y !=0, not terminates(Y,V).
+% Avoid that the vehicle leaves the depot without need. Therefore explore both options: Leaving and staying at the depot after each cycle (also explore a vehicle never leaving)
+leave(V,0) :- routeOrder(_,0,N,V), not stay(V,N).
+stay(V,N) :- routeOrder(_,0,N,V), not leave(V,N).
+routeOrder(Y,Z,N,V) :- routeOrder(X,Y,N-1,V), Y = 0, edge(Y,Z), timeLimit(L), N <= L, not dontOrder(Z,N,V), leave(V,N-1).
+% If no at the depot, simply choose a successor
+routeOrder(Y,Z,N,V) :- routeOrder(X,Y,N-1,V), Y != 0, edge(Y,Z), timeLimit(L), N <= L, not dontOrder(Z,N,V).
+% Avoid that the same ordinal is used twice
+dontOrder(Y',N,V) :- routeOrder(X,Y,N,V), edge(X,Y'), Y != Y'.
 
-% Verify that each vehicle does not take too long
-% This only approximates the solution, as multiple visits to the same node may dilute this calcualation
+% Make sure that the last node is the depot
+terminates(K,V) :- routeOrder(_,0,N,V), K <= N, routeOrder(_,_,K,V).
+:- routeOrder(_,_,N,V), not terminates(N,V).
+
+% Make sure every node is serviced
+:- node(X), not serviced(X), X != 0.
+
+route(X,Y,V) :- routeOrder(X,Y,N,V).
+
+% This may be replaced by a constraint
 :- vehicle(V), 
 	#sum{ST,X : serviceTime(X,ST), services(X,V)} = S, 
 	#sum{D,X,Y : duration(X,Y,D), route(X,Y,V)} = T, 
 	timeLimit(L), 
 	S + T > L.
-
-% order visited nodes
-routeLength(V,N) :- vehicle(V), N=#count{X,Y : route(X,Y,V)}.
-routeOrder(0,0,0,V) :- vehicle(V).
-routeOrder(X,Y,N+1,V) :- nodeOrder(X,N,V), route(X,Y,V), routeLength(V,M), N < M,
-	#count{X',Y' : routeOrder(X',Y',N+1,V), node(X',Y) != node(X,Y)} = 0,
-	#count{N' : routeOrder(X,Y,N',V), N' != N + 1} = 0.
-	
-nodeOrder(X,N,V) :- routeOrder(_,X,N,V).
-ordinaled(X,Y,V) :- routeOrder(X,Y,_,V).
-:- route(X,Y,V), not ordinaled(X,Y,V).
-% This prevents from routes where one path is used several times. This is in principle legitimate, but not supported by this application
-:- routeLength(V,N), not routeOrder(_,0,N,V).
 	
 % Optimize for costs
+%#minimize{C,X,Y,N,V : routeOrder(X,Y,N,V), cost(X,Y,C)}.
 #minimize{C,X,Y,V : route(X,Y,V), cost(X,Y,C)}.
 
-#show route/3.
+#show routeOrder/4.
 #show services/2.
