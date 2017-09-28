@@ -27,7 +27,7 @@ public abstract class BaseConnectedGenerator implements IGenerator {
             if (timeWindowed)
                 inst.getNodes().add(new TimeWindowNode(timeWindows, "n"+i, 1));
             else
-                inst.getNodes().add(new Node("n"+1, 1));
+                inst.getNodes().add(new Node("n"+i, 1));
         }
 
         for(int outer=0; outer < inst.getNodes().size(); outer++) {
