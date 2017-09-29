@@ -1,51 +1,66 @@
 #include <csp>.
 
+%
+%
+%%%%%%%%%%%% Restructure input
 % introduce edge variables if necessary
 edge(X,Y) :- cost(X,Y,_).
 % introduce edge variables
 node(X) :- cost(X,_,_).
 node(Y) :- cost(_,Y,_).
 
-% Decide which vehicle services which node
-%{services(Y,V) : route(X,Y,V)}=1 :- node(Y), Y != 0.
-%serviced(X) :- services(X,V).
-%Sanity check
-%:- services(Y,V), services(Y,V'), V != V'.
+%
+%
+%%%%%%%%%%%%% Assign ascending ordinals to nodes
+nodeCount(M-1) :- #count{X : node(X)} = M. %M-1 so we have to ordinal for 0
+nodeNum(1..M) :- nodeCount(M).
+% This is a default
+ordinal(0,0).
+% Assign each node an ordinal.
+ordinal(X,N) :- nodeNum(N), node(X), node(X'), ordinal(X',N'), not notOrdinal(X,N).
+% Avoid assigning the same ordinal twice
+notOrdinal(X',N) :- ordinal(X,N), node(X'), X' != X. 
+% Avoid assigning two ordinals to one node
+notOrdinal(X,N') :- ordinal(X,N), nodeNum(N'), N != N'.
+% Enforce that the ordinals have the same order as the nodes, i.e. the ordering is unique -> kills symmetries.
+:- ordinal(X,N), ordinal(X',N'), X < X', N > N'.
 
-% Guess routes
-num(L) :- timeLimit(L).
-num(N-1) :- num(N), N > 1.
+%
+%
+%%%%%%%%%%%%%% Guess routes
+num(1..L) :- timeLimit(L).
+
 &dom{0..L} = routeLength(V) :- vehicle(V), timeLimit(L).
-&dom{0;1} = useEdge(X,Y,N,V) :- edge(X,Y), num(N), vehicle(V). 
-&sum{useEdge(X,Y,N,V) : edge(X,Y)} = 1 :- vehicle(V), num(N), &sum{routeLength(V)} >= N.
-&sum{useEdge(X,Y,N,V) : edge(X,Y)} = 0 :- vehicle(V), num(N), &sum{routeLength(V)} < N.
+&dom{0..M}	= nodeAt(N,V) :- num(N), vehicle(V), nodeCount(M).
+&sum{nodeAt(N,V)} = 0 :- vehicle(V), num(N), &sum{routeLength(V)} <= N.
 
-%&show{useEdge(X,Y,N,V) : edge(X,Y), num(N), vehicle(V)}.
-routeOrder(X,Y,N,V) :- &sum{useEdge(X,Y,N,V)} = 1,edge(X,Y), num(N), vehicle(V).
+% This would probably be better, but does not work. Results in unbounded warnings.
+%&dom{0..M}	= nodeAt(N,V) :- num(N), vehicle(V), &sum{routeLength(V)} > N, nodeCount(M).
+%&dom{0}	= nodeAt(N,V) :- num(N), vehicle(V), &sum{routeLength(V)} <= N.
 
-%Can this definition be used?
-%&dom{X} = nodeAt(N,V) :- num(N), vehicle(V), node(X).
-
-% Starts at the depot
-:- routeOrder(X,_,1,V), X != 0.
-% Is connected
-:- routeOrder(_,X,N-1,V), routeOrder(X',_,N,V), X != X'.
-% Terminates at the depot
-terminates(K,V) :- routeOrder(_,0,N,V), num(K), K <= N.
-:- routeOrder(_,X,N,V), not terminates(N,V).
+% Get the route from the CSP variables
+length(L-1,V) :- vehicle(V), num(L), &sum{routeLength(V)} = L-1.
+vehicleAt(0,0,V) :- vehicle(V).
+vehicleAt(X,N,V) :- ordinal(X,O), vehicle(V),num(N), &sum{nodeAt(N,V)} = O, length(L,V), N <= L.
+% Check that the transitions are valid
+:- vehicleAt(Y,N,V), vehicleAt(X,N-1,V), num(N), not edge(X,Y).
 
 % Services every node
-reaches(X,V) :- routeOrder(_,X,_,V), X != 0.
+reaches(X,V) :- vehicleAt(X,_,V), X != 0.
 &dom{0;1} = services(X,V) :- vehicle(V), node(X), reaches(X,V).
 &dom{0} = services(X,V) :- vehicle(V), node(X), not reaches(X,V).
 &sum{services(X,V) : vehicle(V)} = 1 :- node(X), X != 0.
 
 % Time limit
-&sum{useEdge(X,Y,N,V) * D : duration(X,Y,D), num(N)} = travelTime(V) :-  vehicle(V).
+travelTime(0,0,V) :- vehicle(V).
+travelTime(N,D,V) :- travelTime(N-1,D',V), length(L,V), N <= L, vehicleAt(Y,N,V), vehicleAt(X,N-1,V), duration(X,Y,T), D = D' + T.
+
+timeLeft(T,V) :- vehicle(V), length(M,V), travelTime(M,T',V), timeLimit(L), T = L - T'.
 &sum{services(X,V) * ST : serviceTime(X,ST)} = serviceTime(V) :- vehicle(V).
-:- timeLimit(L), vehicle(V), &sum{travelTime(V); serviceTime(V)} > L.
+:- timeLeft(T,V), vehicle(V), &sum{serviceTime(V)} > T.
 
-&minimize{useEdge(X,Y,N,V) * C : cost(X,Y,C), num(N), vehicle(V)}.
+%&minimize{useEdge(X,Y,N,V) * C : cost(X,Y,C), num(N), vehicle(V)}.
+#minimize{C,N,V : vehicleAt(Y,N,V), vehicleAt(X,N-1,V), cost(X,Y,C)}.
 
-#show routeOrder/4.
+#show vehicleAt/3.
 %#show services/2.
