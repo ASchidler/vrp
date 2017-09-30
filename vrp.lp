@@ -10,43 +10,59 @@ node(Y) :- cost(_,Y,_).
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%% Guess routes
-% Each vehicle starts at the depot
-routeOrder(0,0,0,V) :- vehicle(V).
 
 % Avoid that the vehicle leaves the depot without need. Therefore explore both options: Leaving and staying at the depot after each cycle (also explore a vehicle never leaving)
-leave(V,0) :- routeOrder(_,0,N,V), not stay(V,N).
-stay(V,N) :- routeOrder(_,0,N,V), not leave(V,N).
-% Start from the depot, if previously determined to do so
-routeOrder(X,Y,N,V) :- routeOrder(_,X,N-1,V), X = 0, edge(X,Y), timeLimit(L), N <= L, not dontOrder(X,Y,N,V), leave(V,N-1).
+num(1..L) :- timeLimit(L).
+
+leave(1).
+routeOrder(0,Y,1,V) :- leave(V), edge(0,Y), not dontOrder(0,Y,1,V).
 % If not at the depot, simply choose a successor
-routeOrder(X,Y,N,V) :- routeOrder(_,X,N-1,V), X != 0, edge(X,Y), timeLimit(L), N <= L, not dontOrder(X,Y,N,V).
+routeOrder(X,Y,N,V) :- routeOrder(_,X,N-1,V), X != 0, edge(X,Y), num(N), not dontOrder(X,Y,N,V).
 % Avoid that the same ordinal is used twice
 dontOrder(X,Y',N,V) :- routeOrder(X,Y,N,V), edge(X,Y'), Y != Y'.
+
+% If route ends at the depot, start new cycle, if there are unvisited nodes
+leave(V) :- node(X), num(V), terminates(V-1), V > 1, not visited(X,V-1).
+visited(X,V) :- routeOrder(_,X,_,V).
+visited(X,V) :- visited(X,V-1), leave(V).
+
+% This avoids the creation of short cycles. The aggregate is necessary to avoid picking a non-deterministic node and creating symmetry
+% Note that the leave(V) are necessary, otherwise the expression is evaluated at a time where the aggregate is nondeterministic.
+unvisited(X,V-1) :- leave(V), node(X), not visited(X,V-1).
+goal(X,V) :-  #min{X': unvisited(X',V-1)} = X, leave(V).
+:- goal(X,V-1), leave(V), not visited(X,V-1).
+
+%
+%
+%%%%%%%%%%%%%%%%%%%%%% Vehicle assignment
+assign(C,V) :- leave(C), vehicle(V), not notAssign(C,V).
+notAssign(C,V') :- assign(C,V), vehicle(V'), V != V'.
 
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%% Check
 % Make sure that the last node is the depot
-terminates(K,V) :- routeOrder(_,0,N,V), K <= N, routeOrder(_,_,K,V).
-:- routeOrder(_,_,N,V), not terminates(N,V).
+terminates(V) :- routeOrder(_,0,_,V).
+:- leave(V), not terminates(V).
 
 % Make sure every node is serviced
-{services(Y,V) : routeOrder(_,Y,_,V)}=1 :- node(Y), Y != 0.
+services(X,V) :- routeOrder(_,X,_,C), assign(C,V), not notServices(X,V).
+notServices(X,V) :- services(X,V'), vehicle(V), V' != V.
 :- node(X), not services(X,_), X != 0.
 
-
 % Check that the travel duration does not exceed the allowed duration
-travelTime(0,0,V) :- vehicle(V).
-travelTime(N,D,V) :- travelTime(N-1,D',V), timeLimit(L), N <= L, routeOrder(X,Y,N,V), duration(X,Y,T), D = D' + T.
+travelTime(0,0,V) :- leave(V).
+travelTime(N,D,V) :- travelTime(N-1,D',V), num(N), routeOrder(X,Y,N,V), duration(X,Y,T), D = D' + T. 
+travelTime(D,V) :- routeOrder(_,0,N,V), travelTime(N,D,V).
 
 :- vehicle(V), 
-	#sum{ST,X : serviceTime(X,ST), services(X,V)} = S, 
-	travelTime(_,T,V), 
+	#sum{ST,X : serviceTime(X,ST), services(X,C), assign(C,V)} = S, 
+	#sum{D,C : travelTime(D,V), assign(C,V)} = T, 
 	timeLimit(L), 
 	S + T > L.
 	
 % Optimize for costs
-#minimize{C,N,V : routeOrder(X,Y,N,V), cost(X,Y,C)}.
+#minimize{C,Y,N,V : routeOrder(X,Y,N,V), cost(X,Y,C)}.
 
 #show routeOrder/4.
 #show services/2.
@@ -56,11 +72,13 @@ travelTime(N,D,V) :- travelTime(N-1,D',V), timeLimit(L), N <= L, routeOrder(X,Y,
 %
 %%%%%%%%%%%% Symmetry Breaking
 % The first vehicle goes first.
-drives(V) :- routeOrder(0,X,_,V), X != 0.
-:- drives(V), vehicle(V'), V > V', not drives(V').
+%drives(V) :- routeOrder(0,X,_,V), X != 0.
+%:- drives(V), vehicle(V'), V > V', not drives(V').
 
 % Order entering the first node by vehicle ordering
 :- routeOrder(0,X,1,V), routeOrder(0,X',1,V'), V < V', X > X'.
 
 % Order cycles by entry node
-:- routeOrder(0,X,N,V), routeOrder(0,X',N',V), X < X', N > N'.
+%:- routeOrder(0,X,N,V), routeOrder(0,X',N',V), X < X', N > N'.
+
+:- routeOrder(X,Y,N,V), routeOrder(X,Y,N',V), N != N'.
