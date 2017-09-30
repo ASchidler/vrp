@@ -20,6 +20,7 @@ public class Main {
         generators.add(new IncreasingVehiclesConnectedGenerator());
         generators.add(new IncreasingConnectednessGenerator());
         generators.add(new IncreasingNodesConnectednessGenerator());
+        generators.add(new IncreasingCycleNumberFixedVehiclesGenerator());
         generate(true, generators);
         generate(false, generators);
 
