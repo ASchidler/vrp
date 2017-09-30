@@ -59,8 +59,7 @@ timeLeft(T,V) :- vehicle(V), length(M,V), travelTime(M,T',V), timeLimit(L), T = 
 &sum{services(X,V) * ST : serviceTime(X,ST)} = serviceTime(V) :- vehicle(V).
 :- timeLeft(T,V), vehicle(V), &sum{serviceTime(V)} > T.
 
-%&minimize{useEdge(X,Y,N,V) * C : cost(X,Y,C), num(N), vehicle(V)}.
+% Minimize the costs, can't be expressen via constraints
 #minimize{C,N,V : vehicleAt(Y,N,V), vehicleAt(X,N-1,V), cost(X,Y,C)}.
 
 #show vehicleAt/3.
-%#show services/2.
