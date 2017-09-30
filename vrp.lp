@@ -50,3 +50,17 @@ travelTime(N,D,V) :- travelTime(N-1,D',V), timeLimit(L), N <= L, routeOrder(X,Y,
 
 #show routeOrder/4.
 #show services/2.
+
+
+%
+%
+%%%%%%%%%%%% Symmetry Breaking
+% The first vehicle goes first.
+drives(V) :- routeOrder(0,X,_,V), X != 0.
+:- drives(V), vehicle(V'), V > V', not drives(V').
+
+% Order entering the first node by vehicle ordering
+:- routeOrder(0,X,1,V), routeOrder(0,X',1,V'), V < V', X > X'.
+
+% Order cycles by entry node
+:- routeOrder(0,X,N,V), routeOrder(0,X',N',V), X < X', N > N'.
