@@ -72,13 +72,11 @@ travelTime(D,V) :- routeOrder(_,0,N,V), travelTime(N,D,V).
 %
 %%%%%%%%%%%% Symmetry Breaking
 % The first vehicle goes first.
-%drives(V) :- routeOrder(0,X,_,V), X != 0.
-%:- drives(V), vehicle(V'), V > V', not drives(V').
+drives(V) :- assign(C,V).
+:- drives(V), vehicle(V'), V > V', not drives(V').
 
 % Order entering the first node by vehicle ordering
 :- routeOrder(0,X,1,V), routeOrder(0,X',1,V'), V < V', X > X'.
 
-% Order cycles by entry node
-%:- routeOrder(0,X,N,V), routeOrder(0,X',N',V), X < X', N > N'.
-
+% No edge should be used twice, that makes no sense in the VRP scenario (but may be useful in the time window extension)
 :- routeOrder(X,Y,N,V), routeOrder(X,Y,N',V), N != N'.
