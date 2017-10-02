@@ -7,12 +7,16 @@ edge(X,Y) :- cost(X,Y,_).
 node(X) :- cost(X,_,_).
 node(Y) :- cost(_,Y,_).
 
+% Finding a tight heuristic minimizes grounding
+num(1..L) :- timeLimit(T), T / 2 = L.
+vehicleNum(1..M) :- #count{V:vehicle(V)} = C, 3 * C = M.
+
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%% Guess routes
 
 % Avoid that the vehicle leaves the depot without need. Therefore explore both options: Leaving and staying at the depot after each cycle (also explore a vehicle never leaving)
-num(1..L) :- timeLimit(L).
+
 
 leave(1).
 routeOrder(0,Y,1,V) :- leave(V), edge(0,Y), not dontOrder(0,Y,1,V).
@@ -22,7 +26,7 @@ routeOrder(X,Y,N,V) :- routeOrder(_,X,N-1,V), X != 0, edge(X,Y), num(N), not don
 dontOrder(X,Y',N,V) :- routeOrder(X,Y,N,V), edge(X,Y'), Y != Y'.
 
 % If route ends at the depot, start new cycle, if there are unvisited nodes
-leave(V) :- node(X), num(V), terminates(V-1), V > 1, not visited(X,V-1).
+leave(V) :- node(X), vehicleNum(V), terminates(V-1), V > 1, not visited(X,V-1).
 visited(X,V) :- routeOrder(_,X,_,V).
 visited(X,V) :- visited(X,V-1), leave(V).
 
