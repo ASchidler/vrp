@@ -26,30 +26,26 @@ routeOrder(X,Y,N,V) :- routeOrder(_,X,N-1,V), X != 0, edge(X,Y), num(N), not don
 dontOrder(X,Y',N,V) :- routeOrder(X,Y,N,V), edge(X,Y'), Y != Y'.
 
 % If route ends at the depot, start new cycle, if there are unvisited nodes
-leave(V) :- node(X), vehicleNum(V), terminates(V-1), V > 1, not visited(X,V-1).
+leave(V) :- node(X), vehicleNum(V), visited(0,V-1), V > 1, not visited(X,V-1).
 visited(X,V) :- routeOrder(_,X,_,V).
 visited(X,V) :- visited(X,V-1), leave(V).
 
-% This avoids the creation of short cycles. The aggregate is necessary to avoid picking a non-deterministic node and creating symmetry
-% Note that the leave(V) are necessary, otherwise the expression is evaluated at a time where the aggregate is nondeterministic.
+% Set a goal for each new cycle. Use minimum to make it deterministic.
 unvisited(X,V-1) :- leave(V), node(X), not visited(X,V-1).
 goal(X,V) :-  #min{X': unvisited(X',V-1)} = X, leave(V).
 :- goal(X,V-1), leave(V), not visited(X,V-1).
 
 %
 %
-%%%%%%%%%%%%%%%%%%%%%% Vehicle assignment
+%%%%%%%%%%%%%%%%%%%%%% Vehicle assignment, instroduces symmetries
 assign(C,V) :- leave(C), vehicle(V), not notAssign(C,V).
 notAssign(C,V') :- assign(C,V), vehicle(V'), V != V'.
 
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%% Check
-% Make sure that the last node is the depot
-terminates(V) :- routeOrder(_,0,_,V).
-:- leave(V), not terminates(V).
 
-% Make sure every node is serviced
+% Make sure every node is serviced, instroduces symmetries
 services(X,V) :- routeOrder(_,X,_,C), assign(C,V), not notServices(X,V).
 notServices(X,V) :- services(X,V'), vehicle(V), V' != V.
 :- node(X), not services(X,_), X != 0.
