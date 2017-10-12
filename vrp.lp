@@ -16,8 +16,6 @@ vehicleNum(1..M) :- #count{V:vehicle(V)} = C, 3 * C = M.
 %%%%%%%%%%%%%%%%%%%%%%%% Guess routes
 
 % Avoid that the vehicle leaves the depot without need. Therefore explore both options: Leaving and staying at the depot after each cycle (also explore a vehicle never leaving)
-
-
 leave(1).
 routeOrder(0,Y,1,V) :- leave(V), edge(0,Y), not dontOrder(0,Y,1,V).
 % If not at the depot, simply choose a successor
@@ -29,12 +27,6 @@ dontOrder(X,Y',N,V) :- routeOrder(X,Y,N,V), edge(X,Y'), Y != Y'.
 leave(V) :- node(X), vehicleNum(V), visited(0,V-1), V > 1, not visited(X,V-1).
 visited(X,V) :- routeOrder(_,X,_,V).
 visited(X,V) :- visited(X,V-1), leave(V).
-
-% Set a goal for each new cycle. Use minimum to make it deterministic.
-unvisited(X,V-1) :- leave(V), node(X), not visited(X,V-1).
-goal(X,V) :-  #min{X': unvisited(X',V-1)} = X, leave(V).
-% The leave check is just so the aggregate above is guaranteed to be calculated at this point
-:- goal(X,V-1), not visited(X,V-1), leave(V).
 
 % Each route must terminate
 :- leave(V), not visited(0,V).
@@ -54,25 +46,19 @@ services(X,V) :- routeOrder(_,X,_,C), assign(C,V), X!= 0, not notServices(X,V).
 notServices(X,V) :- services(X,V'), vehicle(V), V' != V.
 :- node(X), not services(X,_), X != 0.
 
-% Check that the travel duration does not exceed the allowed duration
-travelTime(0,0,V) :- leave(V).
-travelTime(N,D,V) :- travelTime(N-1,D',V), num(N), routeOrder(X,Y,N,V), duration(X,Y,T), D = D' + T.
-travelTime(D,V) :- routeOrder(_,0,N,V), travelTime(N,D,V).
-
 % Sum up travel time
 :- vehicle(V), 
 	#sum{ST,X : serviceTime(X,ST), services(X,V)} = S, 
-	#sum{D,C : travelTime(D,C), assign(C,V)} = T, 
+	#sum{D,N,C : routeOrder(X,Y,N,C), duration(X,Y,D), assign(C,V)} = T, 
 	timeLimit(L), 
 	S + T > L.
 	
 % Optimize for costs
-#minimize{C,Y,N,V : routeOrder(X,Y,N,V), cost(X,Y,C)}.
+#minimize{C,N,V : routeOrder(X,Y,N,V), cost(X,Y,C)}.
 
 #show routeOrder/4.
 #show services/2.
 #show assign/2.
-
 
 %
 %
@@ -86,3 +72,9 @@ drives(V) :- assign(C,V).
 
 % No edge should be used twice, that makes no sense in the VRP scenario (but may be useful in the time window extension)
 :- routeOrder(X,Y,N,V), routeOrder(X,Y,N',V), N != N'.
+
+% Set a goal for each new cycle. Use minimum to make it deterministic.
+unvisited(X,V-1) :- leave(V), node(X), X != 0, not visited(X,V-1).
+goal(X,V) :-  #min{X': unvisited(X',V-1)} = X, leave(V).
+% The leave check is just so the aggregate above is guaranteed to be calculated at this point
+:- goal(X,V-1), not visited(X,V-1), leave(V).
