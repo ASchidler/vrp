@@ -53,7 +53,7 @@ public abstract class BaseConnectednessGenerator implements IGenerator {
             //Achieve a connected graph
             for (Node n : inst.getNodes()) {
                 if (!connectedNodes.contains(n)) {
-                    inst.getEdges().add(new Edge(1, 2, n, inst.getBaseNode()));
+                    inst.getEdges().add(new Edge(1, 1, n, inst.getBaseNode()));
                     break;
                 }
             }
