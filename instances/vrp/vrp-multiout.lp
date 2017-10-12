@@ -8,4 +8,4 @@ cost(X,Y,C) :- cost(Y,X,C).
 duration(X,Y,1) :- cost(X,Y,_).
 serviceTime(X,1) :- node(X).
 
-timeLimit(20).
+timeLimit(15).

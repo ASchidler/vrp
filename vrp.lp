@@ -8,7 +8,7 @@ node(X) :- cost(X,_,_).
 node(Y) :- cost(_,Y,_).
 
 % Finding a tight heuristic minimizes grounding
-num(1..L) :- timeLimit(T), T / 2 = L.
+num(1..L) :- timeLimit(T), T * 3/ 2 = L.
 vehicleNum(1..M) :- #count{V:vehicle(V)} = C, 3 * C = M.
 
 %
@@ -33,7 +33,11 @@ visited(X,V) :- visited(X,V-1), leave(V).
 % Set a goal for each new cycle. Use minimum to make it deterministic.
 unvisited(X,V-1) :- leave(V), node(X), not visited(X,V-1).
 goal(X,V) :-  #min{X': unvisited(X',V-1)} = X, leave(V).
-:- goal(X,V-1), leave(V), not visited(X,V-1).
+% The leave check is just so the aggregate above is guaranteed to be calculated at this point
+:- goal(X,V-1), not visited(X,V-1), leave(V).
+
+% Each route must terminate
+:- leave(V), not visited(0,V).
 
 %
 %
@@ -46,18 +50,19 @@ notAssign(C,V') :- assign(C,V), vehicle(V'), V != V'.
 %%%%%%%%%%%%%%%%%%%%%%%%% Check
 
 % Make sure every node is serviced, instroduces symmetries
-services(X,V) :- routeOrder(_,X,_,C), assign(C,V), not notServices(X,V).
+services(X,V) :- routeOrder(_,X,_,C), assign(C,V), X!= 0, not notServices(X,V).
 notServices(X,V) :- services(X,V'), vehicle(V), V' != V.
 :- node(X), not services(X,_), X != 0.
 
 % Check that the travel duration does not exceed the allowed duration
 travelTime(0,0,V) :- leave(V).
-travelTime(N,D,V) :- travelTime(N-1,D',V), num(N), routeOrder(X,Y,N,V), duration(X,Y,T), D = D' + T. 
+travelTime(N,D,V) :- travelTime(N-1,D',V), num(N), routeOrder(X,Y,N,V), duration(X,Y,T), D = D' + T.
 travelTime(D,V) :- routeOrder(_,0,N,V), travelTime(N,D,V).
 
+% Sum up travel time
 :- vehicle(V), 
-	#sum{ST,X : serviceTime(X,ST), services(X,C), assign(C,V)} = S, 
-	#sum{D,C : travelTime(D,V), assign(C,V)} = T, 
+	#sum{ST,X : serviceTime(X,ST), services(X,V)} = S, 
+	#sum{D,C : travelTime(D,C), assign(C,V)} = T, 
 	timeLimit(L), 
 	S + T > L.
 	
@@ -66,6 +71,7 @@ travelTime(D,V) :- routeOrder(_,0,N,V), travelTime(N,D,V).
 
 #show routeOrder/4.
 #show services/2.
+#show assign/2.
 
 
 %
