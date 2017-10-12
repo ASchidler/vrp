@@ -18,6 +18,9 @@ public class Main {
         generators.add(new SimpleCycleGenerator());
         generators.add(new IncreasingNodesConnectedGenerator());
         generators.add(new IncreasingVehiclesConnectedGenerator());
+        generators.add(new IncreasingConnectednessGenerator());
+        generators.add(new IncreasingNodesConnectednessGenerator());
+        generators.add(new IncreasingCycleNumberFixedVehiclesGenerator());
         generate(true, generators);
         generate(false, generators);
 
@@ -37,7 +40,7 @@ public class Main {
             if (! generatorDir.exists())
                 generatorDir.mkdir();
 
-            for(int size=1; size <= 10; size++) {
+            for(int size=1; size <= 20; size++) {
                 File f = new File(String.format("generated\\%s\\%s\\%s-%d.lp", type, generator.getName(), generator.getName(), size));
                 if (f.exists())
                     f.delete();
