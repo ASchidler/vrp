@@ -21,6 +21,7 @@ public class Main {
         generators.add(new IncreasingConnectednessGenerator());
         generators.add(new IncreasingNodesConnectednessGenerator());
         generators.add(new IncreasingCycleNumberFixedVehiclesGenerator());
+        generators.add(new IncreasingNodesConnectedRandomGenerator());
         generate(true, generators);
         generate(false, generators);
 
