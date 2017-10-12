@@ -10,6 +10,7 @@ last_routes = None
 last_vehicles = None
 last_order = None
 last_edges = None
+last_assign = None
 
 #Is called whenever a model is found
 def on_model(model):
@@ -21,31 +22,27 @@ def on_model(model):
 	global last_vehicles
 	global last_order
 	global last_edges
+	global last_assign
 	
 	last_vehicles = []
+	last_services = []
+	last_routes = []
+	last_order = []
+	last_edges = []
+	last_assign = dict()
+	
 	for s in model.symbols(atoms=True):
 		if s.name == 'vehicle':
 			last_vehicles.append(str(s.arguments[0]))
-			
-	last_services = []
-	for s in model.symbols(atoms=True):
-		if s.name == 'services':
+		elif s.name == 'services':
 			last_services.append((str(s.arguments[0]), str(s.arguments[1])))
-	
-	last_routes = []
-	for s in model.symbols(atoms=True):
-		if s.name == 'route':
-			last_routes.append((str(s.arguments[0]), str(s.arguments[1]), str(s.arguments[2])))
-			
-	last_order = []
-	for s in model.symbols(atoms=True):
-		if s.name == 'routeOrder':
+		elif s.name == 'routeOrder':
+			last_routes.append((str(s.arguments[0]), str(s.arguments[1]), str(s.arguments[3])))
 			last_order.append((str(s.arguments[0]), str(s.arguments[1]), int(str(s.arguments[2])), str(s.arguments[3])))
- 
-	last_edges = []
-	for s in model.symbols(atoms=True):
-		if s.name == 'edge':
+		elif s.name == 'edge':
 			last_edges.append((str(s.arguments[0]), str(s.arguments[1])))
+		elif s.name == 'assign':
+			last_assign[str(s.arguments[0])] = str(s.arguments[1])
 			
 def on_finish(res):
 	print res
@@ -101,6 +98,7 @@ def draw_nodes(vehicles, G, pos):
 	
 def draw_edges(vehicles, G, pos):
 	global last_routes
+	global last_assign
 	
 	#Add edges based on routes. If two vehicles share an edge, mix the colors
 	edge_colors = dict()
@@ -112,12 +110,12 @@ def draw_edges(vehicles, G, pos):
 		if (c_key in edge_colors):
 			edge_labels[c_key].append(s[2])
 			c_color = edge_colors[c_key]
-			new_color = vehicles[s[2]]
+			new_color = vehicles[last_assign[s[2]]]
 			c_color = (c_color[0] + new_color[0]) / 2, (c_color[1] + new_color[1]) / 2, (c_color[2] + new_color[2]) / 2
 			edge_colors[c_key] = c_color
 		#First vehicle to use the edge
 		else:
-			edge_colors[c_key] = vehicles[s[2]]
+			edge_colors[c_key] = vehicles[last_assign[s[2]]]
 			edge_labels[c_key] = [s[2]]
 
 	#Transform structures, so they can be used to draw
@@ -167,13 +165,15 @@ def output_routes():
 	
 	for veh in last_vehicles:
 		vehicle_routes[veh] = []
-			
+	
+	#Sort by vehicle and then route 
+	last_order.sort(key=lambda x : (x[3],x[2]))
+	
 	for r in last_order:
 		if r[0] != r[1]:
-			vehicle_routes[r[3]].append((r[1],r[2]))
+			vehicle_routes[last_assign[r[3]]].append((r[1],r[2]))
 		
 	for k,v in vehicle_routes.iteritems():
-		sorted(v, key=lambda x: x[1])
 		output = k +": 0"
 		
 		for n in v:
