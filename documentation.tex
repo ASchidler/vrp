@@ -12,6 +12,9 @@
 \maketitle
 
 \section{Introduction}
+Solving computationally hard problems is a problem that often occurs in the real world. There exist several approaches, where the applicability depends on the problem.\\
+While it may not be possible to find optimal solutions to all instances of an intractable problem, it may be possible to do so for interesting subclasses of the problem. Another approach would be to aim for a good, but not optimal solution.\\
+With answer set programming (ASP) one usually tries to find optimal solutions. The goal of this project was to gauge the applicability of ASP to a scheduling problem. The vehicle routing problem (VRP) has been chosen to represent the large class of scheduling problems.
 
 \section{Problem Description}
 The Vehicle Routing Problem (VRP) often occurs in logistics and solutions are therefore directly applicable to real world problems. It has been the subject of a lot of research.
@@ -135,7 +138,15 @@ One example is that in the assignment of cycles to vehicles switching two vehicl
 The performance of the encoding depends heavily on the number of edges and how tight the time limit is.
 
 \subsection{VRPTW Encoding}
-The time window encoding is a direct extension of the VRP encoding. Here it is necessary to define the concrete order and time a node is visited. This implies that an order in which a vehicle goes through the cycles has to be established.\\
+The time window encoding is a direct extension of the VRP encoding. There are two tasks the extension performs:
+\begin{enumerate}
+	\item Check if all the nodes can be serviced within their time windows.
+	\item Check if the total travel duration still holds.
+\end{enumerate}
+
+This implies that an order in which a vehicle travels through its cycles has to be determined. A car does not have to leave the depot at a fixed time
+
+Here it is necessary to define the concrete order and time a node is visited. This implies that an order in which a vehicle goes through the cycles has to be established.\\
 
 
 \subsection{Visualization}
@@ -182,26 +193,48 @@ This type creates one cycle with size * 5 nodes using one vehicle. Costs, servic
 
 
 \section{Results}
-\subsection{Test instances}
+This section presents the results taken from the project. This includes some measurements and also and outlook on possible future work.
 
-\begin{tabular}{l | r | r}
-Instance Type			& VRP	& VRPTW\\
+\subsection{Test instances}
+In order to evaluate how well the encoding works, the aforementioned generated test instances were run with increasing size. Table \ref{table:benchmark} shows the maximum size that was solvable. The solver was given five minutes time on a Intel Core i5 with 3,3 GHz and 8 GB of RAM.\\
+To give a feeling how well the optimization process worked, the table additionally lists the results from the first encoding version.
+
+Please note, that not all instance types exist for the time window extension. Only deterministic types are used for VRPTW.
+As a comparison it also lists the results taken from the first encoding version. The list is incomplete, is some types where added later in the project cycle.
+
+Unfortunately the instances available on the internet would require a greater transformation. The transformation would be time-consuming and the results would not be directly comparable with the original instance.
+
+\begin{table}
+\begin{tabular}{l | r | r | r}
+Instance Type			& VRP v1	& VRP	& VRPTW\\
 \hline
-Connected Nodes			& & \\
-Connected Nodes Random		& 4& \\
-Connected Vehicles			& & \\
-Connectedness Ratio		& & \\
-Connectedness Nodes		& 8& \\
-Cycle Number			& & \\
-Cycle Number Vehicle		& & \\
-Cycle Size				& & \\
-Simple Cycle				& 7& \\
+Connected Nodes			& 2			& 7		& \\
+Connected Nodes Random	& -			& 7		& \\
+Connected Vehicles		& 0			& 		& \\
+Connectedness Ratio		& -			& 		& \\
+Connectedness Nodes		& -			& 		& \\
+Cycle Number			& 2			& 		& \\
+Cycle Number Vehicle	& -			& 		& \\
+Cycle Size				& 3 		& 		& \\
+Simple Cycle			& 7			& 9		& \\
 \end{tabular}
+\caption{Solvable test instances}
+\label{table:benchmark}
+\end{table}
 
 \subsection{Possible Enhancements}
-symmetries
-manual step limit
-preprocessing
+There are three things that are known to increase the solving time of this encoding:
+\begin{itemize}
+	\item Loose limit; this may be improved by making the limits part of the problem instance. These limits include time limit (already part of the instance), cycle length limit, number of cycles limit. Loose limits cause a blow up in grounding.
+	\item Symmetries; these allow for a lot of equal solutions that have to be explored by the solver. Efforts have been made to break these symmetries. Symmetries that are known are the assignment of cycles to vehicles, servicing assignments and route directions.
+	\item Number of edges; the impact of edges are twofold, they cause a blow up in the grounding phase and allow for more solutions, increasing the solving time as well.
+\end{itemize}
+
+Another possible enhancement would be a preprocessing step. This would allow for elimination of unnecessary edges (e.g. in a complete graph). Another possibility of preprocessing would be a cluster detection. This would allow to separate the problem into smaller sub-problems.
+
+\section{Conclusion}
+The conclusion is twofold. First personally I learned a lot about how ASP works and how to optimize ASP code.\\
+Second that ASP is probably not the optimal choice for this kind of problem. Many constraints in the VRP and especially the VRPTW require ordering and counting, which seems contrived and inefficient in ASP.
 
 Sources:
 VRP Papers
