@@ -60,10 +60,12 @@ travelTime(D,C) :- routeOrder(_,0,N,C), travelTime(N,D,C).
 % This occurs whenever a cycle exceeds the time limit
 :- leave(C), not travelTime(_,C).
 
-% Sum up travel time, this is one of the most costly statements
-:- vehicle(V), 
-	#sum{D,C : travelTime(D,C), assign(C,V)} > L, 
-	timeLimit(L).
+% Aggregate times for vehicles
+vehicleTime(0,0,V) :- vehicle(V).
+vehicleTime(T,C,V) :- vehicleTime(T',C-1,V), vehicleNum(C), assign(C,V), travelTime(D,C), T = T' + D, timeLimit(L), T <= L.
+vehicleTime(T,C,V) :- vehicleTime(T,C-1,V), vehicleNum(C), not assign(C,V).
+% Time limit exceeded
+:- leave(C), vehicle(V), not vehicleTime(_,C,V).
 
 % Optimize for costs
 #minimize{C,N,V : routeOrder(X,Y,N,V), cost(X,Y,C)}.
