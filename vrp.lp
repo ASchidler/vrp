@@ -42,19 +42,34 @@ notAssign(C,V') :- assign(C,V), vehicle(V'), V != V'.
 %%%%%%%%%%%%%%%%%%%%%%%%% Check
 
 % Make sure every node is serviced, instroduces symmetries
-services(X,V) :- routeOrder(_,X,_,C), assign(C,V), X!= 0, not notServices(X,V).
-notServices(X,V) :- services(X,V'), vehicle(V), V' != V.
-:- node(X), not services(X,_), X != 0.
+servicesC(X,C) :- routeOrder(_,X,_,C), X != 0, not notServices(X,C).
+notServices(X,C) :- servicesC(X,C'), leave(C), C' != C.
+:- node(X), not servicesC(X,_), X != 0.
 
-% Sum up travel time
+% This is needed to avoid counting the service time multiple times
+servicesAt(X,N,C) :- servicesC(X,C), routeOrder(_,X,N,C), not notServicesAt(X,N,C).
+notServicesAt(X,N,C) :- servicesAt(X,N',C), routeOrder(_,X,N,C), N != N'.
+% Kill Symmetry, i.e. always choose the first time entering as servicing time
+:- servicesAt(X,N,C), notServicesAt(X,N',C), N' < N.
+
+% Calculate the travel time for each cycle
+travelTime(0,0,C) :- leave(C).
+travelTime(N,D,C) :- travelTime(N-1,D',C), num(N), routeOrder(X,Y,N,C), duration(X,Y,T), timeLimit(L), L >= D, D = D' + T, not servicesAt(Y,N,C).
+travelTime(N,D,C) :- travelTime(N-1,D',C), num(N), routeOrder(X,Y,N,C), duration(X,Y,T), timeLimit(L), L >= D, D = D' + T + ST, servicesAt(Y,N,C), serviceTime(Y,ST).
+travelTime(D,C) :- routeOrder(_,0,N,C), travelTime(N,D,C).
+% This occurs whenever a cycle exceeds the time limit
+:- leave(C), not travelTime(_,C).
+
+% Sum up travel time, this is one of the most costly statements
 :- vehicle(V), 
-	#sum{ST,X : serviceTime(X,ST), services(X,V)} = S, 
-	#sum{D,N,C : routeOrder(X,Y,N,C), duration(X,Y,D), assign(C,V)} = T, 
-	timeLimit(L), 
-	S + T > L.
-	
+	#sum{D,C : travelTime(D,C), assign(C,V)} > L, 
+	timeLimit(L).
+
 % Optimize for costs
 #minimize{C,N,V : routeOrder(X,Y,N,V), cost(X,Y,C)}.
+
+% For display
+services(X,V) :- servicesC(X,C), assign(C,V).
 
 #show routeOrder/4.
 #show services/2.
