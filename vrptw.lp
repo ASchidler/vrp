@@ -27,19 +27,19 @@ alreadyReached(X,T',N,C) :- reachedAt(X,T,N,C), available(X,T'), T != T'.
 leftAt(X,T,N,C) :- reachedAt(X,T,N,C), num(N), not servicedAtTw(N,C).
 leftAt(X,T,N,C) :- reachedAt(X,O,N,C), num(N), servicedAtTw(N,C),serviceTime(X,S), T = O + S.
 % Now exclude all models where not every node is reached
-:- routeOrder(_,X,N,C), not reachedAt(X,_,N,C),X != 0.
+:- routeOrder(_,X,N,C), not reachedAt(X,_,N,C).
 
-% Check the travel duration. As the statements above start from time 0, this may skew the total travel time.
-% Here the serviced nodes are fixed in time, and then the starting time is calculated from there
-% First use the fixed points, i.e. the service nodes, by using the earliest possible arrival
-travelTime(X,T,N,C) :- servicedAtTw(N,C), reachedAt(X,T,N,C).
-% Now calculate back and forward
-travelTime(Y,O,N+1,C) :- travelTime(X,T,N,C), not servicedAtTw(N+1,C), routeOrder(X,Y,N+1,C),	duration(X,Y,D), O = T+D.
-travelTime(X,O,N-1,C) :- travelTime(Y,T,N,C), not servicedAtTw(N-1,C), routeOrder(X,Y,N,C),		duration(X,Y,D), O = T-D.
+% Find out when the first node is hit. This is necessary since we don't have to leave the depot at time 0.
+% When we have to leave is determined by the first serviced node. (Note that )
+travelTime(X,T,N,C) :- servicedAtTw(N,C), reachedAt(X,T,N,C), useVehicle(0,_,C,V).
+% Now calculate back
+travelTime(X,O,N-1,C) :- travelTime(Y,T,N,C), not servicedAtTw(N-1,C), routeOrder(X,Y,N,C), duration(X,Y,D), O = T-D.
+
+% Cycles where we don't service anyone are useless
+:- leave(C), not servicedAtTw(_,C).
 
 % Now verify that it does not take too long
-:- travelTime(0,T,0,C), travelTime(0,T',N,C), timeLimit(L), T' - T > L.
-:- vehicle(V), assign(C,V), assign(C',V), travelTime(0,T,0,C), travelTime(0,T',N,C'), num(N), timeLimit(L), T' - T > L.
+:- travelTime(0,T,0,C), assign(C,V), assign(C',V), reachedAt(0,T',_,C'), timeLimit(L), T' - T > L.
 
 % This does not work if an edge is used several times, this might occur in rare cases, e.g. the path 1->2<->3; assume that 3 is available before 2
 % therefore the vehicle goes to 3 via 2, but has to go back to service 2, now it has to go through 3 again to reach the depot
