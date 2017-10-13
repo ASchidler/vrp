@@ -16,12 +16,15 @@
 \maketitle
 
 \section{Introduction}
-Solving computationally hard problems is a problem that often occurs in the real world. There exist several approaches, where the applicability depends on the problem.\\
-While it may not be possible to find optimal solutions to all instances of an intractable problem, it may be possible to do so for interesting subclasses of the problem. Another approach would be to aim for a good, but not optimal solution.\\
-With answer set programming (ASP) one usually tries to find optimal solutions. The goal of this project was to gauge the applicability of ASP to a scheduling problem. The vehicle routing problem (VRP) has been chosen to represent the large class of scheduling problems.
+The problem of solving computationally hard problems is the focus of much research, as it is tied to many real world problems. Many approaches have been developed to tackle intractable problems.\\
+While it may not be possible to find optimal solutions to all instances of an intractable problem, it may be possible to do so for interesting subclasses of it. Another approach would be to aim for a good, but not necessarily optimal solution.\\
+
+For this project answer set programming (ASP) has been used. The goal of this project was to gauge the applicability of ASP to a scheduling problem. The vehicle routing problem (VRP) has been chosen the represent the large class of scheduling problems.\\
+
 
 \section{Problem Description}
-The Vehicle Routing Problem (VRP) often occurs in logistics and solutions are therefore directly applicable to real world problems. It has been the subject of a lot of research.
+The VRP is defined very closely so it matches challenges occurring in the logistic industry. VRP solvers therefore have a very immediate applicable and have been the subject of extensive research. To factor in 
+
 It is noteworthy that, while the general problem stays the same, the specific formal definitions vary from paper to paper. While the different definitions are compatible with each other, each seems to be tailored to the specific approach used in the paper. Examples for these differences include the use of a complete graph, a regular graph or a set of points.
 Therefore in this section a informal description that captures the core idea is given and afterwards a formal description as is used for this project.
 
@@ -201,7 +204,8 @@ This section presents the results taken from the project. This includes some mea
 For the development and testing Potassco \cite{potassco} has been used.
 
 \subsection{Test instances}
-In order to evaluate how well the encoding works, the aforementioned generated test instances were run with increasing size. Table \ref{table:benchmark} shows the maximum size that was solvable. The solver was given five minutes time on a Intel Core i5 with 3,3 GHz and 8 GB of RAM.\\
+In order to evaluate how well the encoding works, the aforementioned generated test instances were run with increasing sizes. Table \ref{table:benchmark} shows the maximum size that was solvable for the VRP encoding as well as for the VRPTW encoding.\\
+The solver was given five minutes time on a Intel Core i5 with 3,3 GHz and 8 GB of RAM.\\
 To give a feeling how well the optimization process worked, the table additionally lists the results from the first encoding version.
 
 Please note, that not all instance types exist for the time window extension. Only deterministic types are used for VRPTW.
@@ -213,19 +217,23 @@ Unfortunately the instances available on the internet would require a greater tr
 \begin{tabular}{l | r | r | r}
 Instance Type			& VRP v1	& VRP	& VRPTW\\
 \hline
-Connected Nodes			& 2			& 7		& \\
+Connected Nodes			& 2			& 7		& 4\\
 Connected Nodes Random	& -			& 7		& -\\
-Connected Vehicles		& 0			& 0 \footnote{While v1 stopped in grounding, the final encoding actually found the optimal solution, but did not manage to verify its optimality in time}	& \\
+Connected Vehicles		& 0			& 0 \footnote{While v1 stopped in grounding, the final encoding actually found the optimal solution, but did not manage to verify its optimality in time}	& 0\\
 Connectedness Ratio		& -			& 6		& -\\
 Connectedness Nodes		& -			& 18	& -\\
-Cycle Number			& 2			& 		& \\
-Cycle Number Vehicle	& -			& 		& -\\
-Cycle Size				& 3 		& 		& \\
-Simple Cycle			& 7			& 9		& \\
+Cycle Number			& 2			& 5		& 2\\
+Cycle Number Vehicle	& -			& 4		& -\\
+Cycle Size				& 3 		& 12	& 4\\
+Simple Cycle			& 7			& 9		& 3\\
 \end{tabular}
 \caption{Solvable test instances}
 \label{table:benchmark}
 \end{table}
+
+The results show that considerable performance gain was possible due to the optimization efforts. The results also show that performance decreases drastically when solving VRPTW instances.
+
+Although results cannot be directly compared, the ''Simple Cycle'' instance is probably the easiest graph structure in the context of the VRP. The used encoding is able to solve an instance of size 9, which means 45 nodes. This is rather small compared to current benchmark results, where instances of sizes of over 100 nodes can be solved in under a minute \cite{benchmark}.
 
 \subsection{Possible Enhancements}
 There are three things that are known to increase the solving time of this encoding:
