@@ -1,0 +1,211 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}    % Extended typesetting of mathematical expression.
+\usepackage{amssymb}    % Provides a multitude of mathematical symbols.
+\usepackage{mathtools}  % Further extensions of mathematical typesetting.
+
+\DeclareMathOperator*{\minimize}{minimize}
+
+\title{Vehicle Routing Problem approaches with Answer Set Programming}
+\author{André Schidler}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+\section{Problem Description}
+The Vehicle Routing Problem (VRP) often occurs in logistics and solutions are therefore directly applicable to real world problems. It has been the subject of a lot of research.
+It is noteworthy that, while the general problem stays the same, the specific formal definitions vary from paper to paper. While the different definitions are compatible with each other, each seems to be tailored to the specific approach used in the paper. Examples for these differences include the use of a complete graph, a regular graph or a set of points.
+Therefore in this section a informal description that captures the core idea is given and afterwards a formal description as is used for this project.
+
+\subsection{Informal Description}
+The problem of how to assign customers to delivery vehicles is quite common for companies. This is exactly the problem defined by the VRP. To be more exact, a solution to a VRP are routes for the vehicles, where each route must not exceed a defined time limit. Each route starts and ends at the depot.\\
+While the VRP is usually an optimization problem (the routes are optimal according to some cost metric), the associated decision problem can be thought of as a generalization of the Travelling Salesmen problem. It is therefore $\mathcal{NP}$-hard.\\
+
+Many extensions to the VRP exist. These include time windows (a node must be visited during specific times), site dependency (not every vehicle may service every node) or multiple depots.\\
+For this project only the time window extension has been considered. Here there exists \\
+
+As noticed in the introduction the formal definitions of the VRP vary. To give a feeling for these variations here are some examples:
+\begin{itemize}
+	\item Nodes may be defined via graphs, complete graphs or points in a 2-D grid.
+	\item In some definitions, each node must be visited exactly once, in others it may be visited multiple times.
+	\item In some definitions there is a difference between costs and duration, in others there is no distinction.
+\end{itemize}
+
+\subsection{Formal Description}
+For this project, a connected and directed graph is used. Each node may be visited multiple times and there is a distinction between costs and duration.\\
+A graph is used, because it fits the ASP language better than using other definition methods. Allowing for a node to be visited multiple times, allows for leaf nodes (the predecessor needs to be visited at least twice) and ''choke nodes'' where multiple vehicles must use the same node. Finally a separation between cost and duration is common in other papers and there was no reason the merge the concepts.
+
+A VRP instance therefore consists of the following elements:
+\begin{itemize}
+	\item A graph $G = (V,E)$ with vertices $V$ and edges $E$.
+	\item A mapping from edges to integers, called duration $d(x,y) = i, (x,y) \in E, i \in \mathbb{N}$, or $d(x,y) = 0, (x,y) \notin E$.
+	\item A mapping from eges to integers, called costs $c(x,y) = i, (x,y) \in E, i \in \mathbb{N}$, or $d(x,y) = 0, (x,y) \notin E$.
+	\item A mapping from vertices to integers, called the service time $s(x) = i, x \in V, i \in \mathbb{N}$.
+	\item A timelimit $L \in \mathbb{N}$.
+	\item A set of vehicles $C$.
+\end{itemize}
+
+The solution are as mentioned above the routes for each vehicle and additionally a mapping determining, which vehicle actually services a node. This is necessary as multiple vehicles may visit the same node and service makes a difference in terms of duration.
+\begin{enumerate}
+	\item A route for each vehicle $v \in C$: \\
+		$r_v(x,i) =
+		\begin{cases}
+			1	\quad \text{if vehicle } v \text{ is at node } x \in C \text{ at time } i\\
+			0	\quad \text{else}
+		\end{cases}
+		$
+	\item A mapping from nodes $x \in V$ to vehicles: \\
+		$s_x(v) =
+		\begin{cases}
+			1	\quad \text{if vehicle } v \in C \text{ services node } x\\
+			0	\quad \text{else}
+		\end{cases}
+		$
+\end{enumerate}
+
+Each route must start and end at the depot (known as the 0 node) and must not exceed the maximum duration. Formally the following constraints must hold for every solution.
+\begin{itemize}
+	\item Routes must start at 0:\\
+		$$r_v(0,1) = 1 \quad \text{for all } v \in C$$
+	\item Routes must end at 0:\\
+		$$r_v(0,n) = 1 \quad n = |r_v| \text{, for all } v \in C$$
+	\item A vehicle is at exactly one node at each step: \\
+		$$\sum_{x \in V} r_(x,i) = 1 \quad \text{for all } i \in \mathbb{N}$$
+	\item Each node is serviced by exactly one vehicle:\\
+		$$\sum_{v \in C} s_x(v) = 1 \quad \text{for all } x \in V$$
+	\item Each node transition must exist as an edge: \\
+		$$\sum_{x,y \in V, (x,y) \not\in E} \sum_{v \in c} \sum_{i=2} (r_v(x,i-1) * r_v(y,i)) = 0 $$
+	\item Each node that is serviced must be visited: \\
+		$$\sum_{i=2} r_v(x,i) \geq s_x(v) \quad \text{for all } v \in C, x \in V $$
+	\item The total travel duration is within the limit: \\
+		$$\sum_{i=2} \sum_{x,y \in V} (d(x,y) * r_v(x,i-1) * r_v(y,i)) + \sum_{x \in V}(s_x(v) * s(x)) \leq L \quad \text{for each } v \in C$$
+
+\end{itemize}
+
+Finally the VRP is an optimization problem. Each edge has an associated cost and the goal is to minimize the total cost over all routes:
+$$\displaystyle{\minimize \sum_{i=2}\sum_{x,y \in V} (c(x,y) * r_v(x,i-1) * r_v(y,i))}$$
+
+\subsection{Time Window Extension}
+An extension to the VRP has also been considered. The VRPTW, or VRP with Time Window Extension, adds time windows that the vehicles must hit.
+
+Formally an instance additionally defines a set $W_x \subset \mathbb{N}$ for each node $x \in V \setminus \{0\}$.
+Given a vehicle $v \in C$, a node $x \in V$, a step $i \in \mathbb{N}$ and a route $r_v$, there must exist a mapping $a_v(i) \in \mathbb{N}$, known as the arrival time and a mapping 
+$$t_x(i) = \begin{cases}
+			1	\quad \text{if node } x \text{ is serviced at step } i \in \mathbb{N}\\
+			0	\quad \text{else}
+		\end{cases}$$ 
+known as the service step.
+
+The following constraints must hold:
+\begin{itemize}
+	\item A node is only serviced once:\\
+		$$\sum{i=1} t_x(i) = 1 \quad \text{for each } x \in V \setminus {0}$$
+	\item The servicing vehicle must be at the node at the service step:\\
+		$$\sum_{v \in C} \sum{i=1} (s_x(v) *  t_x(i) * r_v(x,i)) = 1 \quad \text{for each } x \in V \setminus {0}$$
+	\item Arrival times must be consistent with previous arrival:\\
+		$$a_v(i) \geq a_v(i-1) + \sum_{x,y \in V} (d(x,y) * r_v(x,i-1) * r_v(y,i)) + \sum_{x \in V} (r_v(x, i-1) * s_x(v) * t_x(i))$$
+	\item The total duration must not exceed the allowed duration: \\
+		$$a_v(n) \leq L \quad n = |a_v|, \text{for each } v \in C$$
+	\item The arrival times must be consistent with the time windows:\\
+		$$a_v(i) \in W_x \quad r_v(x,i)  = 1 \text{, for all} v \in C, i \in \mathbb{N}$$
+\end{itemize}
+
+\section{Solution}
+For this project Answer Set Programming was used to solve VRP and VRPTW instances. Additionally a small visualizer was created, to make the solutions more accesible and a generator for problem instances was created to see the behaviour of the solver on larger instances.
+This chapter is an overview over the tactic employed in solving VRP instances. For a detailed overview over the program code and the used atoms, please refer to the source files and README.
+
+\subsection{VRP Encoding}
+The encoding has been revised several times. The first version was not able to solve non-trivial instances within an acceptable time frame.\\
+The final version consists of three parts:
+\begin{enumerate}
+	\item Route generation
+	\item Constraint checking
+	\item Symmetry breaking
+\end{enumerate}
+
+The job of the route generation is to produce solution candidates, that are then checked by the constraint checking part.\\
+In the first version the route generation tried to construct routes for each vehicle, by using at least one outgoing edge per node. As this yields a lot of non-connected routes that may not start or end at the depot, this proved to be inefficient.\\
+Another attempt to encode most of the problem with an Constraint Satisfaction Problem extension (clingcon), yielded worse results. This may be either due to the approach not being suitable to the VRP or the non-proficiency of the auther.\\
+In the final version, route generation tries to find cycles, by starting at the depot and going forward, until the depot is hit. This is continued until all nodes are visited. In a separate step these cycles are assigned to vehicles. The advantage of this approach is, that the routes generated this way adhere to almost all constraints. Only the duration limit remains.\\
+
+Finally symmetry breaking tries to avoid solutions that are essentially equal except for ordering. This reduces the amount of solutions that have to be searched by the solver.\\
+One example is that in the assignment of cycles to vehicles switching two vehicles yields a new valid, but equal solution.
+
+The performance of the encoding depends heavily on the number of edges and how tight the time limit is.
+
+\subsection{VRPTW Encoding}
+The time window encoding is a direct extension of the VRP encoding. Here it is necessary to define the concrete order and time a node is visited. This implies that an order in which a vehicle goes through the cycles has to be established.\\
+
+
+\subsection{Visualization}
+In order to make the results more accesible, a little visualisization python script has been added. Using the clingo python interface, it visualizes the solution in two forms:
+\begin{itemize}
+	\item Using the networkx library is produces a graphic of the solution. The graph is drawn, and using a color for each vehicle, coloring is used to detail which edges are used and which vehicle services which node.
+	\item A line with the node sequence for each vehicle is printed to the console.
+\end{itemize}
+
+
+\subsection{Instance Generator}
+In order to test the scripts with larger instances, a java program that creates instances of increasing sizes has been added. Different types of instances are created, with sizes from 1 to 20, where the meaning of size depends on the instance type.
+
+\begin{description}
+
+\item[Connected Nodes]
+This instance type produces a fully connected graph where the size determines the number of nodes (size + 2). Each instance uses five vehicles, with costs, service time and duration of 1.
+
+\item[Connected Nodes Random]
+Similar to ''Connected Nodes'' but uses random edge costs ranging from 1 to 50.
+
+\item[Connected Vehicles]
+This instance type produces a fully connected graph where the size determines the number of vehicles. Each instance 10 nodes, with costs, service time and duration of 1.
+
+\item[Connectedness Ratio]
+This instance type produces a graph with a specific ''connectedness ratio'', i.e. how many of the possible edges are actually created (size * 5 percent). Each instance uses 5 vehicles, 20 nodes. Duration, costs and service time is 1.
+
+\item[Connectedness Nodes]
+Similar to the previous type, but uses size + 2 nodes and creates 30\% of possible edges.
+
+\item[Cycle Number]
+Produces cycles of length 10, where the size determines how many cycles are used. Size also determines how many vehicles are used. Cost, service time and duration are 1.
+
+\item[Cycle Number Vehicle]
+Similar to the previous type, but uses fixed vehicle number of 5.
+
+\item[Cycle Size]
+This type uses cycles as well, but here size determines the number of nodes per cycle. Five such cycles are created as well as five vehicles. Costs, service time and durations are 1.
+
+\item[Simple Cycle]
+This type creates one cycle with size * 5 nodes using one vehicle. Costs, service time and durations are 1.
+
+\end{description}
+
+
+\section{Results}
+\subsection{Test instances}
+
+\begin{tabular}{l | r | r}
+Instance Type			& VRP	& VRPTW\\
+\hline
+Connected Nodes			& & \\
+Connected Nodes Random		& 4& \\
+Connected Vehicles			& & \\
+Connectedness Ratio		& & \\
+Connectedness Nodes		& 8& \\
+Cycle Number			& & \\
+Cycle Number Vehicle		& & \\
+Cycle Size				& & \\
+Simple Cycle				& 7& \\
+\end{tabular}
+
+\subsection{Possible Enhancements}
+symmetries
+manual step limit
+preprocessing
+
+Sources:
+VRP Papers
+potassco
+networkx
+
+\end{document}
