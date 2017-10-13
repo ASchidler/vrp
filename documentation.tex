@@ -3,8 +3,12 @@
 \usepackage{amsmath}    % Extended typesetting of mathematical expression.
 \usepackage{amssymb}    % Provides a multitude of mathematical symbols.
 \usepackage{mathtools}  % Further extensions of mathematical typesetting.
+\usepackage{footnote}
+\usepackage{url}
 
 \DeclareMathOperator*{\minimize}{minimize}
+\makesavenoteenv{tabular}
+\makesavenoteenv{table}
 
 \title{Vehicle Routing Problem approaches with Answer Set Programming}
 \author{André Schidler}
@@ -152,7 +156,7 @@ Here it is necessary to define the concrete order and time a node is visited. Th
 \subsection{Visualization}
 In order to make the results more accesible, a little visualisization python script has been added. Using the clingo python interface, it visualizes the solution in two forms:
 \begin{itemize}
-	\item Using the networkx library is produces a graphic of the solution. The graph is drawn, and using a color for each vehicle, coloring is used to detail which edges are used and which vehicle services which node.
+	\item Using the networkx \cite{networkx} library is produces a graphic of the solution. The graph is drawn, and using a color for each vehicle, coloring is used to detail which edges are used and which vehicle services which node.
 	\item A line with the node sequence for each vehicle is printed to the console.
 \end{itemize}
 
@@ -193,7 +197,8 @@ This type creates one cycle with size * 5 nodes using one vehicle. Costs, servic
 
 
 \section{Results}
-This section presents the results taken from the project. This includes some measurements and also and outlook on possible future work.
+This section presents the results taken from the project. This includes some measurements and also and outlook on possible future work.\\
+For the development and testing Potassco \cite{potassco} has been used.
 
 \subsection{Test instances}
 In order to evaluate how well the encoding works, the aforementioned generated test instances were run with increasing size. Table \ref{table:benchmark} shows the maximum size that was solvable. The solver was given five minutes time on a Intel Core i5 with 3,3 GHz and 8 GB of RAM.\\
@@ -209,12 +214,12 @@ Unfortunately the instances available on the internet would require a greater tr
 Instance Type			& VRP v1	& VRP	& VRPTW\\
 \hline
 Connected Nodes			& 2			& 7		& \\
-Connected Nodes Random	& -			& 7		& \\
-Connected Vehicles		& 0			& 		& \\
-Connectedness Ratio		& -			& 		& \\
-Connectedness Nodes		& -			& 		& \\
+Connected Nodes Random	& -			& 7		& -\\
+Connected Vehicles		& 0			& 0 \footnote{While v1 stopped in grounding, the final encoding actually found the optimal solution, but did not manage to verify its optimality in time}	& \\
+Connectedness Ratio		& -			& 6		& -\\
+Connectedness Nodes		& -			& 18	& -\\
 Cycle Number			& 2			& 		& \\
-Cycle Number Vehicle	& -			& 		& \\
+Cycle Number Vehicle	& -			& 		& -\\
 Cycle Size				& 3 		& 		& \\
 Simple Cycle			& 7			& 9		& \\
 \end{tabular}
@@ -236,9 +241,7 @@ Another possible enhancement would be a preprocessing step. This would allow for
 The conclusion is twofold. First personally I learned a lot about how ASP works and how to optimize ASP code.\\
 Second that ASP is probably not the optimal choice for this kind of problem. Many constraints in the VRP and especially the VRPTW require ordering and counting, which seems contrived and inefficient in ASP.
 
-Sources:
-VRP Papers
-potassco
-networkx
+\bibliographystyle{unsrt}
+\bibliography{documentation}
 
 \end{document}
